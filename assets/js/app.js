@@ -10,6 +10,13 @@ const DATA_PATHS = {
   results: "assets/data/results.json",
 };
 
+const VIDEO_REPO_PAGES_BASE = "https://flat-pack-bench.github.io/videos";
+const VIDEO_REPO_MEDIA_BASE = "https://media.githubusercontent.com/media/flat-pack-bench/videos/videos";
+const VIDEO_REPO_SOURCE_FOLDERS = {
+  keyframe: "keyframe_videos",
+  trimmed: "trimmed_videos",
+};
+
 const CATEGORY_META = {
   temporal_loc: { label: "Temporal Localization", short: "TLOC", className: "tag-temporal_loc" },
   temporal_ord: { label: "Temporal Ordering", short: "TORD", className: "tag-temporal_ord" },
@@ -398,7 +405,7 @@ function renderDatasetDetail() {
   }
 
   const videoSpec = state.manifest.videos[videoKey(q)];
-  const videoSrc = videoSpec?.[state.datasetVideoMode] || "";
+  const videoSources = datasetVideoSources(q, videoSpec, state.datasetVideoMode);
   const promptSpecs = state.manifest.questionPromptImages[q.qid_flat] || [];
   const filteredIndex = state.filteredQuestions.findIndex((item) => item.qid_flat === q.qid_flat);
 
@@ -409,7 +416,7 @@ function renderDatasetDetail() {
       <button class="nav-button" type="button" data-step="1">Next</button>
     </div>
     <div class="dataset-detail-stack">
-      ${renderDatasetMedia(q, videoSrc, promptSpecs)}
+      ${renderDatasetMedia(q, videoSources, promptSpecs)}
       ${renderQuestion(q, { title: `Question ${pad(q._siteIndex + 1)}`, includeIndex: true })}
       ${renderModelResponsesForQuestion(q)}
     </div>
@@ -421,11 +428,15 @@ function renderDatasetDetail() {
   });
 }
 
-function renderDatasetMedia(q, videoSrc, promptSpecs) {
-  const videoCell = videoSrc
+function renderDatasetMedia(q, videoInput, promptSpecs) {
+  const videoSources = normalizeVideoSources(videoInput);
+  const sourceTags = videoSources
+    .map((src) => `<source src="${escapeHtml(src)}" type="video/mp4">`)
+    .join("");
+  const videoCell = videoSources.length
     ? `
       <div class="viewer-media-cell viewer-video-cell">
-        <video class="dataset-video" src="${escapeHtml(videoSrc)}" controls playsinline preload="metadata"></video>
+        <video class="dataset-video" controls playsinline preload="metadata">${sourceTags}</video>
         <p class="media-hint">${state.datasetVideoMode === "keyframe" ? "Key-frame video" : "Trimmed video"}</p>
       </div>
     `
@@ -454,6 +465,39 @@ function renderDatasetMedia(q, videoSrc, promptSpecs) {
       ${promptCells}
     </div>
   `;
+}
+
+function datasetVideoSources(q, videoSpec, mode) {
+  const sources = [];
+  addVideoSource(sources, videoSpec?.[mode]);
+
+  const deployedFolder = VIDEO_REPO_SOURCE_FOLDERS[mode];
+  if (deployedFolder) {
+    const sourcePath = `${deployedFolder}/${q.vid_category}/${q.furniture_name}/${q.video_id}/${q.video_id}.mp4`;
+    addVideoSource(sources, `${VIDEO_REPO_PAGES_BASE}/${sourcePath}`);
+    addVideoSource(sources, `${VIDEO_REPO_MEDIA_BASE}/${sourcePath}`);
+  }
+
+  if (mode === "keyframe") {
+    addVideoSource(sources, `${VIDEO_REPO_PAGES_BASE}/${q.vid_category}/${q.furniture_name}/${q.video_id}.mp4`);
+  }
+
+  return sources;
+}
+
+function normalizeVideoSources(videoInput) {
+  const sources = [];
+  if (Array.isArray(videoInput)) {
+    videoInput.forEach((src) => addVideoSource(sources, src));
+  } else {
+    addVideoSource(sources, videoInput);
+  }
+  return sources;
+}
+
+function addVideoSource(sources, src) {
+  if (!src || sources.includes(src)) return;
+  sources.push(src);
 }
 
 function renderPromptMediaCell(spec) {
