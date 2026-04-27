@@ -24,6 +24,10 @@ const CATEGORY_META = {
   tracking: { label: "Tracking", short: "TRACK", className: "tag-tracking" },
 };
 
+const REVEAL_STORAGE_KEY = "flatpack:showGroundTruthAndResponses";
+const REVEAL_SHOW_LABEL = "Click to see the ground-truth and model responses!";
+const REVEAL_HIDE_LABEL = "Hide the ground-truth and model responses";
+
 const state = {
   questions: [],
   stats: {},
@@ -39,6 +43,7 @@ const state = {
   datasetVideoMode: "keyframe",
   currentQid: "",
   filteredQuestions: [],
+  showGroundTruthAndResponses: false,
   resultsSort: { key: "micro", direction: "desc" },
 };
 
@@ -88,12 +93,14 @@ async function init() {
   state.selfExplanations = selfExplanations;
   state.tvaExamples = tvaExamples;
   state.results = results;
+  state.showGroundTruthAndResponses = readRevealPreference();
 
   renderBenchmarkStats();
   setupDatasetViewer();
   setupResultsTable();
   renderSupplementaryExplorers();
   setupGlobalEvents();
+  syncRevealControls();
 }
 
 async function loadJson(path) {
@@ -205,7 +212,7 @@ function renderCuratedDetail() {
     <div class="dataset-detail-stack">
       ${renderDatasetMedia(q, videoSrc, promptSpecs)}
       ${renderQuestion(q, { title: `Curated example ${state.exampleIndex + 1}`, includeIndex: false })}
-      ${renderModelResponsesForQuestion(q)}
+      ${state.showGroundTruthAndResponses ? renderModelResponsesForQuestion(q) : ""}
     </div>
   `;
 }
@@ -418,7 +425,7 @@ function renderDatasetDetail() {
     <div class="dataset-detail-stack">
       ${renderDatasetMedia(q, videoSources, promptSpecs)}
       ${renderQuestion(q, { title: `Question ${pad(q._siteIndex + 1)}`, includeIndex: true })}
-      ${renderModelResponsesForQuestion(q)}
+      ${state.showGroundTruthAndResponses ? renderModelResponsesForQuestion(q) : ""}
     </div>
   `;
 
@@ -645,7 +652,7 @@ function renderSelfExplanationExamples() {
           <h3>${escapeHtml(q.furniture_name)} / ${escapeHtml(q.video_id)}</h3>
           <p>${escapeHtml(q.question.raw_qstr)}</p>
           <div class="question-meta">${tags}</div>
-          ${responses.map((response) => renderResponseCard(response, q)).join("")}
+          ${state.showGroundTruthAndResponses ? responses.map((response) => renderResponseCard(response, q)).join("") : ""}
         </article>
       `;
     })
@@ -665,7 +672,7 @@ function renderTvaExamples() {
           <h3>${escapeHtml(q.furniture_name)} / ${escapeHtml(q.video_id)}</h3>
           <video src="assets/supplementary/sectiond/walkthrough_${escapeHtml(entry.video_id)}.mp4" controls playsinline preload="metadata"></video>
           <p>${escapeHtml(q.question.raw_qstr)}</p>
-          ${responses.map((response) => renderResponseCard(response, q)).join("")}
+          ${state.showGroundTruthAndResponses ? responses.map((response) => renderResponseCard(response, q)).join("") : ""}
         </article>
       `;
     })
@@ -675,20 +682,27 @@ function renderTvaExamples() {
 function renderQuestion(q, options = {}) {
   const meta = CATEGORY_META[q.question_category] || { label: q.question_category, short: q.question_category, className: "" };
   const title = options.title || "Question";
-  const promptStatus = promptAvailabilityLabel(q);
   return `
     <div class="question-card">
-      <div class="question-meta">
-        <span class="tag ${meta.className}">${meta.short}</span>
-        <span class="pill">${escapeHtml(categoryLabel(q.question_category))}</span>
-        <span class="pill">${escapeHtml(q.template_type)}</span>
-        <span class="pill">${escapeHtml(q.vid_category)} / ${escapeHtml(q.furniture_name)}</span>
-        <span class="pill">${escapeHtml(q.video_id)}</span>
-        ${promptStatus ? `<span class="pill">${promptStatus}</span>` : ""}
+      <div class="question-card-top">
+        <div class="question-meta">
+          <span class="tag ${meta.className}">${meta.short}</span>
+        </div>
+        ${renderRevealControl()}
       </div>
       <h3>${escapeHtml(title)}</h3>
       <p class="question-text">${escapeHtml(q.question.raw_qstr)}</p>
       ${renderOptions(q)}
+    </div>
+  `;
+}
+
+function renderRevealControl() {
+  return `
+    <div class="reveal-control">
+      <button class="reveal-toggle" type="button" data-reveal-toggle aria-pressed="${String(state.showGroundTruthAndResponses)}">
+        ${escapeHtml(state.showGroundTruthAndResponses ? REVEAL_HIDE_LABEL : REVEAL_SHOW_LABEL)}
+      </button>
     </div>
   `;
 }
@@ -700,7 +714,7 @@ function renderOptions(q) {
     <ul class="option-list">
       ${options
         .map(([key, option]) => {
-          const isCorrect = Number(key) === Number(correct.idx) || option.label === correct.label;
+          const isCorrect = state.showGroundTruthAndResponses && (Number(key) === Number(correct.idx) || option.label === correct.label);
           return `<li class="${isCorrect ? "correct" : ""}"><strong>${escapeHtml(option.label)}.</strong> ${escapeHtml(option.text || option.full_text || "")}</li>`;
         })
         .join("")}
@@ -740,15 +754,6 @@ function promptFallback(spec) {
   `;
 }
 
-function promptAvailabilityLabel(q) {
-  const specs = state.manifest.questionPromptImages?.[q.qid_flat];
-  if (!specs) return "";
-  const available = specs.filter((spec) => spec.available).length;
-  if (available === specs.length) return "Prompt available";
-  if (available > 0) return `${available}/${specs.length} prompts available`;
-  return "Prompt fallback";
-}
-
 function flattenResponses(responses = {}) {
   const rows = [];
   Object.entries(responses).forEach(([model, byVideo]) => {
@@ -786,6 +791,7 @@ function normalizeResponse(payload = {}) {
 }
 
 function renderResponseCard(response, q) {
+  if (!state.showGroundTruthAndResponses) return "";
   const correct = q.question?.correct_option?.label;
   const verdict = typeof response.correct === "boolean"
     ? (response.correct ? "correct" : "incorrect")
@@ -795,8 +801,8 @@ function renderResponseCard(response, q) {
   return `
     <article class="response-card">
       <strong>${escapeHtml(response.model)}</strong>
-      <p>${escapeHtml(setting)}${verdict ? ` - ${verdict}` : ""}</p>
-      ${response.answer ? `<span class="answer-badge">Answer ${escapeHtml(response.answer)}</span>` : ""}
+      <p>${escapeHtml(setting)}</p>
+      ${renderAnswerBadge(response.answer, verdict)}
       <details>
         <summary>Response</summary>
         <pre class="response-text">${escapeHtml(`${response.raw}${thoughts}`.trim())}</pre>
@@ -805,7 +811,17 @@ function renderResponseCard(response, q) {
   `;
 }
 
+function renderAnswerBadge(answer, verdict) {
+  if (!answer) return "";
+  const iconClass = verdict === "correct" ? "fa-check" : verdict === "incorrect" ? "fa-xmark" : "";
+  const stateClass = verdict === "correct" || verdict === "incorrect" ? ` is-${verdict}` : "";
+  const icon = iconClass ? `<i class="fa-solid ${iconClass}" aria-hidden="true"></i>` : "";
+  const label = verdict ? ` aria-label="Answer ${escapeHtml(answer)}, ${verdict}"` : "";
+  return `<span class="answer-badge${stateClass}"${label}>${icon}<span>Answer ${escapeHtml(answer)}</span></span>`;
+}
+
 function renderModelResponsesForQuestion(q) {
+  if (!state.showGroundTruthAndResponses) return "";
   const rows = state.modelResponses.responsesByQuestion?.[q.qid_flat] || [];
   if (!rows.length) {
     return `<div class="empty-state">No model responses available for this question.</div>`;
@@ -852,8 +868,46 @@ function supplementaryVideo(promptKind, videoId, mode, section = "sep") {
   return `assets/supplementary/${section}/${videoId}_${mode}.mp4`;
 }
 
+function readRevealPreference() {
+  try {
+    return window.localStorage.getItem(REVEAL_STORAGE_KEY) === "true";
+  } catch {
+    return false;
+  }
+}
+
+function writeRevealPreference(value) {
+  try {
+    window.localStorage.setItem(REVEAL_STORAGE_KEY, String(value));
+  } catch {
+    // Ignore storage failures; the button still works for this page load.
+  }
+}
+
+function toggleGroundTruthAndResponses() {
+  state.showGroundTruthAndResponses = !state.showGroundTruthAndResponses;
+  writeRevealPreference(state.showGroundTruthAndResponses);
+  syncRevealControls();
+  renderCuratedDetail();
+  renderDatasetDetail();
+  renderSupplementaryExplorers();
+}
+
+function syncRevealControls() {
+  $$("[data-reveal-toggle]").forEach((button) => {
+    button.setAttribute("aria-pressed", String(state.showGroundTruthAndResponses));
+    button.textContent = state.showGroundTruthAndResponses ? REVEAL_HIDE_LABEL : REVEAL_SHOW_LABEL;
+  });
+}
+
 function setupGlobalEvents() {
   document.addEventListener("click", (event) => {
+    const revealButton = event.target.closest("[data-reveal-toggle]");
+    if (revealButton) {
+      toggleGroundTruthAndResponses();
+      return;
+    }
+
     const promptButton = event.target.closest(".prompt-image-button[data-overlay-src]");
     if (promptButton) {
       openImageOverlay(promptButton.dataset.overlaySrc, promptButton.dataset.overlayLabel);

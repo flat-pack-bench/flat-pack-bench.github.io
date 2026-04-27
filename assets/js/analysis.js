@@ -36,38 +36,105 @@ const CATEGORY_META = {
   tracking: { label: "Tracking", short: "TRACK", className: "tag-tracking" },
 };
 
+const REVEAL_STORAGE_KEY = "flatpack:showGroundTruthAndResponses";
+const REVEAL_SHOW_LABEL = "Click to see the ground-truth and model responses!";
+const REVEAL_HIDE_LABEL = "Hide the ground-truth and model responses";
+
+const revealState = {
+  showGroundTruthAndResponses: readRevealPreference(),
+};
+
 const topicKey = document.body.dataset.analysisTopic;
 const topic = TOPICS[topicKey];
 const root = document.querySelector("#analysis-root");
+let topicData = null;
 
 if (!topic || !root) {
   if (root) root.innerHTML = `<div class="empty-state">Unknown analysis topic.</div>`;
 } else {
   loadJson(topic.data)
     .then((data) => {
-      if (topicKey === "visual-prompts") {
-        root.innerHTML = topic.renderer(data);
-        setupVisualPromptAnalysis(data);
-        return;
-      }
-      root.innerHTML = `
-        <article class="analysis-answer">
-          <span class="eyebrow">Research Question</span>
-          <h2>${escapeHtml(topic.title)}</h2>
-          <p>${escapeHtml(topic.summary)}</p>
-        </article>
-        ${topic.renderer(data)}
-      `;
+      topicData = data;
+      renderTopic();
     })
     .catch((error) => {
       root.innerHTML = `<div class="empty-state">Unable to load analysis data: ${escapeHtml(error.message)}</div>`;
     });
 }
 
+document.addEventListener("click", (event) => {
+  const button = event.target.closest("[data-reveal-toggle]");
+  if (!button) return;
+  toggleGroundTruthAndResponses();
+});
+
+function renderTopic() {
+  if (!topic || !root || !topicData) return;
+  if (topicKey === "visual-prompts") {
+    root.innerHTML = topic.renderer(topicData);
+    setupVisualPromptAnalysis(topicData);
+    syncRevealControls();
+    return;
+  }
+  root.innerHTML = `
+    <article class="analysis-answer">
+      <span class="eyebrow">Research Question</span>
+      <h2>${escapeHtml(topic.title)}</h2>
+      <p>${escapeHtml(topic.summary)}</p>
+    </article>
+    ${topic.renderer(topicData)}
+  `;
+  syncRevealControls();
+}
+
 async function loadJson(path) {
   const response = await fetch(path);
   if (!response.ok) throw new Error(`${path} returned ${response.status}`);
   return response.json();
+}
+
+function readRevealPreference() {
+  try {
+    return window.localStorage.getItem(REVEAL_STORAGE_KEY) === "true";
+  } catch {
+    return false;
+  }
+}
+
+function writeRevealPreference(value) {
+  try {
+    window.localStorage.setItem(REVEAL_STORAGE_KEY, String(value));
+  } catch {
+    // Ignore storage failures; the button still works for this page load.
+  }
+}
+
+function toggleGroundTruthAndResponses() {
+  revealState.showGroundTruthAndResponses = !revealState.showGroundTruthAndResponses;
+  writeRevealPreference(revealState.showGroundTruthAndResponses);
+  if (topicKey === "visual-prompts") {
+    syncRevealControls();
+    renderVisualPromptDetail();
+    return;
+  }
+  renderTopic();
+}
+
+function renderRevealControl() {
+  return `
+    <div class="reveal-control">
+      <button class="reveal-toggle" type="button" data-reveal-toggle aria-pressed="${String(revealState.showGroundTruthAndResponses)}">
+        ${escapeHtml(revealState.showGroundTruthAndResponses ? REVEAL_HIDE_LABEL : REVEAL_SHOW_LABEL)}
+      </button>
+    </div>
+  `;
+}
+
+function syncRevealControls() {
+  document.querySelectorAll("[data-reveal-toggle]").forEach((button) => {
+    button.setAttribute("aria-pressed", String(revealState.showGroundTruthAndResponses));
+    button.textContent = revealState.showGroundTruthAndResponses ? REVEAL_HIDE_LABEL : REVEAL_SHOW_LABEL;
+  });
 }
 
 function renderVisualPromptAnalysis(entries) {
@@ -113,6 +180,7 @@ function setupVisualPromptAnalysis(entries) {
   const nav = document.querySelector("#visual-prompt-nav");
   const select = document.querySelector("#visual-prompt-type");
   if (!nav || !select) return;
+  select.value = visualPromptState.promptType;
 
   nav.innerHTML = entries
     .map((entry, index) => {
@@ -158,6 +226,18 @@ function renderVisualPromptDetail() {
   const kind = visualPromptState.promptType;
   const promptSpecs = supplementaryPromptSpecs(q, "../assets/supplementary/sectionb/sep");
   const responses = flattenResponses(entry.responses).filter((response) => response.video === "keyframe" && response.prompt === kind);
+  const responseSection = revealState.showGroundTruthAndResponses
+    ? `
+      <div>
+        <h3>Model responses (${promptKindLabel(kind)} - Key-frame)</h3>
+        ${
+          responses.length
+            ? `<div class="response-grid">${responses.map((response) => renderResponseCard(response, q)).join("")}</div>`
+            : `<div class="empty-state">No responses available for this prompt recipe.</div>`
+        }
+      </div>
+    `
+    : "";
   container.innerHTML = `
     <div class="viewer-question">
       <div class="${promptSpecs.length > 1 ? "viewer-media-stack" : "viewer-media-row"}">
@@ -170,14 +250,7 @@ function renderVisualPromptDetail() {
       <div class="viewer-question-body">
         ${renderQuestionSummary(q)}
       </div>
-      <div>
-        <h3>Model responses (${promptKindLabel(kind)} - Key-frame)</h3>
-        ${
-          responses.length
-            ? `<div class="response-grid">${responses.map((response) => renderResponseCard(response, q)).join("")}</div>`
-            : `<div class="empty-state">No responses available for this prompt recipe.</div>`
-        }
-      </div>
+      ${responseSection}
     </div>
   `;
 }
@@ -309,9 +382,11 @@ function renderExplanationExample(entry, mode) {
       <div class="question-meta">
         ${(entry.cot_error_tags || []).map((tag) => `<span class="pill">${escapeHtml(tag.join(" "))}</span>`).join("")}
       </div>
-      <div class="response-grid">
-        ${responses.map((response) => renderResponseCard(response, q)).join("")}
-      </div>
+      ${
+        revealState.showGroundTruthAndResponses
+          ? `<div class="response-grid">${responses.map((response) => renderResponseCard(response, q)).join("")}</div>`
+          : ""
+      }
     </article>
   `;
 }
@@ -319,11 +394,11 @@ function renderExplanationExample(entry, mode) {
 function renderQuestionSummary(q) {
   const meta = CATEGORY_META[q.question_category] || { short: q.question_category, className: "" };
   return `
-    <div class="question-meta">
-      <span class="tag ${meta.className}">${meta.short}</span>
-      <span class="pill">${escapeHtml(q.template_type)}</span>
-      <span class="pill">${escapeHtml(q.vid_category)} / ${escapeHtml(q.furniture_name)}</span>
-      <span class="pill">${escapeHtml(q.video_id)}</span>
+    <div class="question-card-top">
+      <div class="question-meta">
+        <span class="tag ${meta.className}">${meta.short}</span>
+      </div>
+      ${renderRevealControl()}
     </div>
     <h3>${escapeHtml(q.furniture_name)} / ${escapeHtml(q.video_id)}</h3>
     <p class="question-text">${escapeHtml(q.question.raw_qstr)}</p>
@@ -338,7 +413,7 @@ function renderOptions(q) {
       ${Object.entries(q.question.options || {})
         .sort(([a], [b]) => Number(a) - Number(b))
         .map(([key, option]) => {
-          const isCorrect = Number(key) === Number(correct.idx) || option.label === correct.label;
+          const isCorrect = revealState.showGroundTruthAndResponses && (Number(key) === Number(correct.idx) || option.label === correct.label);
           return `<li class="${isCorrect ? "correct" : ""}"><strong>${escapeHtml(option.label)}.</strong> ${escapeHtml(option.text || option.full_text || "")}</li>`;
         })
         .join("")}
@@ -403,20 +478,30 @@ function normalizeResponse(payload = {}) {
 }
 
 function renderResponseCard(response, q) {
+  if (!revealState.showGroundTruthAndResponses) return "";
   const correct = q.question?.correct_option?.label;
   const verdict = correct && response.answer ? (response.answer === correct ? "correct" : "incorrect") : "";
   const thoughts = response.thoughts?.length ? `\n\n${response.thoughts.join("\n\n")}` : "";
   return `
     <article class="response-card">
       <strong>${escapeHtml(response.model)}</strong>
-      <p>${escapeHtml(response.video)} / ${escapeHtml(response.prompt)}${verdict ? ` - ${verdict}` : ""}</p>
-      ${response.answer ? `<span class="answer-badge">Answer ${escapeHtml(response.answer)}</span>` : ""}
+      <p>${escapeHtml(response.video)} / ${escapeHtml(response.prompt)}</p>
+      ${renderAnswerBadge(response.answer, verdict)}
       <details>
         <summary>Response</summary>
         <pre class="response-text">${escapeHtml(`${response.raw}${thoughts}`.trim())}</pre>
       </details>
     </article>
   `;
+}
+
+function renderAnswerBadge(answer, verdict) {
+  if (!answer) return "";
+  const iconClass = verdict === "correct" ? "fa-check" : verdict === "incorrect" ? "fa-xmark" : "";
+  const stateClass = verdict === "correct" || verdict === "incorrect" ? ` is-${verdict}` : "";
+  const icon = iconClass ? `<i class="fa-solid ${iconClass}" aria-hidden="true"></i>` : "";
+  const label = verdict ? ` aria-label="Answer ${escapeHtml(answer)}, ${verdict}"` : "";
+  return `<span class="answer-badge${stateClass}"${label}>${icon}<span>Answer ${escapeHtml(answer)}</span></span>`;
 }
 
 function summarizeBy(rows, key) {
