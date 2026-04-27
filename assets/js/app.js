@@ -50,6 +50,8 @@ const state = {
 const $ = (selector, root = document) => root.querySelector(selector);
 const $$ = (selector, root = document) => Array.from(root.querySelectorAll(selector));
 
+setupTableOfContents();
+
 init().catch((error) => {
   console.error(error);
   const content = $(".content");
@@ -898,6 +900,66 @@ function syncRevealControls() {
     button.setAttribute("aria-pressed", String(state.showGroundTruthAndResponses));
     button.textContent = state.showGroundTruthAndResponses ? REVEAL_HIDE_LABEL : REVEAL_SHOW_LABEL;
   });
+}
+
+function setupTableOfContents() {
+  const links = $$(".toc a[href^='#']");
+  const sections = links
+    .map((link) => {
+      const target = $(link.hash);
+      return target ? { id: target.id, link, target } : null;
+    })
+    .filter(Boolean);
+
+  if (sections.length === 0) return;
+
+  let frame = 0;
+  const setActiveSection = (id) => {
+    sections.forEach(({ link, id: sectionId }) => {
+      const isActive = sectionId === id;
+      link.classList.toggle("active", isActive);
+      if (isActive) {
+        link.setAttribute("aria-current", "location");
+      } else {
+        link.removeAttribute("aria-current");
+      }
+    });
+  };
+
+  const updateActiveSection = () => {
+    frame = 0;
+    const anchorY = Math.min(window.innerHeight * 0.35, 240);
+    let active = sections[0];
+
+    sections.forEach((section) => {
+      if (section.target.getBoundingClientRect().top <= anchorY) {
+        active = section;
+      }
+    });
+
+    const pageBottom = document.documentElement.scrollHeight - window.innerHeight - window.scrollY;
+    if (pageBottom <= 2) {
+      active = sections[sections.length - 1];
+    }
+
+    setActiveSection(active.id);
+  };
+
+  const scheduleUpdate = () => {
+    if (frame) return;
+    frame = window.requestAnimationFrame(updateActiveSection);
+  };
+
+  if (typeof ResizeObserver !== "undefined") {
+    const resizeObserver = new ResizeObserver(scheduleUpdate);
+    sections.forEach(({ target }) => resizeObserver.observe(target));
+  }
+
+  window.addEventListener("load", scheduleUpdate);
+  window.addEventListener("scroll", scheduleUpdate, { passive: true });
+  window.addEventListener("resize", scheduleUpdate);
+  window.addEventListener("hashchange", scheduleUpdate);
+  updateActiveSection();
 }
 
 function setupGlobalEvents() {
