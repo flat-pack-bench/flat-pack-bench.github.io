@@ -1,0 +1,39 @@
+{
+  "question_count": 602,
+  "unique_video_count": 50,
+  "category_counts": {
+    "mating": 87,
+    "temporal_loc": 103,
+    "temporal_ord": 155,
+    "tracking": 257
+  },
+  "category_labels": {
+    "temporal_loc": "Temporal Localization",
+    "temporal_ord": "Temporal Ordering",
+    "mating": "Mating",
+    "tracking": "Tracking"
+  },
+  "template_counts": {
+    "1edge_order": 4,
+    "1edge_order_last": 1,
+    "1part": 20,
+    "1part_order": 11,
+    "1part_order_last": 6,
+    "2parts": 29,
+    "edge_order": 77,
+    "find_edges": 38,
+    "latest_change": 62,
+    "many_part_order": 78,
+    "next_change": 19,
+    "track_multi": 117,
+    "track_single": 140
+  },
+  "furniture_count": 24,
+  "video_counts_by_category": {
+    "Bench": 3,
+    "Chair": 31,
+    "Misc": 8,
+    "Shelf": 3,
+    "Table": 5
+  }
+}

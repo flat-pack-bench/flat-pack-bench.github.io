@@ -1,3 +1,294 @@
-<!DOCTYPE html><html><head><title>Flat-Pack Benchmark Viewer</title><style>nav{display:flex;overflow:scroll;padding-bottom:.5em;margin-bottom:.5em}nav>span{border:transparent solid 4px;padding:0 .5em;margin:.2em .5em;cursor:pointer;flex:1;box-sizing:border-box}nav>span.active{border:4px solid #0f0}section{columns:2}section>*{width:100%;break-inside:avoid}section img{max-width:100%}#instructions span{padding:.2em;margin:0 .2em}#instructions li{margin:.5em 0}.correct{font-weight:700}p.option>span{border-right:1px solid #ccc;padding-right:.3em;margin-right:.3em}</style></head><body><script src="https://unpkg.com/vue@3/dist/vue.global.js"></script><div id="app"><div id="instructions"><h3 style="display:inline;padding-right:.4em">Benchmark Viewer</h3>We show questions in our benchmark, their answers (in bold), and model responses (next to options)<ul><li>The questions are color-coded by their question category <span v-for="cat in categories" :style="{background: cat['color']}">{{ cat['name'] }} </span>.</li><li>There are 74 questions in total, with IDs <i>0...73</i>. Click on a question id to view it, question navigation is scrollable.</li></ul></div><nav><span v-for="(q, id) in questions" @click="updateDisplayed(id)" :class="{active: id == displayed}" :style="{background: categories[q.question_category].color}">{{ id }}</span></nav><section v-if="displayed !== null && questions.length > 0"><div><h5>Question</h5><p>{{ q.question.raw_qstr }}</p><div><h5>Options</h5><template v-for="(option, ix) in q.question.options"><p :class="{correct: ix == q.question.correct_option.idx}" class="option"><span>{{ option.full_text }} </span><small>{{ answers[option.label].join(", ") }}</small></p></template></div></div><pre style="overflow:scroll">
-          
-        </pre><video controls :src="`videos/${q.vid_category}/${q.furniture_name}/${q.video_id}.mp4`"></video><template v-if="q.question_category == 'tracking'"><div><h3>Image A</h3><img :src="`questions/${q.template_type}/data/${q.vid_category}/${q.furniture_name}/${q.video_id}/prompt_images/${q.prompt_img_0_fn}`"></div><div><h3>Image B</h3><img :src="`questions/${q.template_type}/data/${q.vid_category}/${q.furniture_name}/${q.video_id}/prompt_images/${q.jumbled_prompt_img_1_fn}`"></div></template><template v-else><img :src="`questions/${q.template_type}/data/${q.vid_category}/${q.furniture_name}/${q.video_id}/prompt_images/${q.prompt_img_fn}`"></template></section></div><script src="index.js"></script></body></html>
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta
+      name="description"
+      content="Flat-Pack Bench evaluates spatio-temporal video understanding in large vision-language models through furniture assembly."
+    >
+    <title>Flat-Pack Bench</title>
+    <link rel="stylesheet" href="assets/css/styles.css?v=20260427-3">
+  </head>
+  <body>
+    <header class="hero" id="top">
+      <nav class="topbar" aria-label="Primary navigation">
+        <a class="mark" href="#top">Flat-Pack Bench</a>
+        <div class="topbar-links">
+          <a href="#overview">Overview</a>
+          <a href="#benchmark">Benchmark</a>
+          <a href="#dataset">Dataset Viewer</a>
+          <a href="#results">Results</a>
+          <a href="#citation">Citation</a>
+        </div>
+      </nav>
+
+      <div class="hero-grid">
+        <div class="hero-copy">
+          <p class="eyebrow">Furniture assembly as a spatio-temporal stress test</p>
+          <h1 class="paper-title" aria-label="Flat-Pack Bench">
+            <span class="sc-cap">F</span><span class="sc-small">LAT</span><span class="sc-punct">-</span><span class="sc-cap">P</span><span class="sc-small">ACK</span><span class="sc-cap sc-word">B</span><span class="sc-small">ENCH</span>
+          </h1>
+          <p class="subtitle">
+            Evaluating spatio-temporal understanding in large vision-language models
+            through fine-grained furniture assembly questions.
+          </p>
+          <p class="authors">
+            Aditya Chetan, Eric Cai, Peeyush Kushwaha, Bharath Raj Nagoor Kani,
+            Utkarsh Mall, Qianqian Wang, Noah Snavely, Bharath Hariharan
+          </p>
+          <p class="paper-status">
+            <a href="https://cvpr.thecvf.com/">To appear in CVPR 2026</a>
+          </p>
+          <div class="affiliation-logos" aria-label="Author affiliations">
+            <a href="https://www.cornell.edu/" aria-label="Cornell University">
+              <img src="assets/logos/cornell.svg" alt="Cornell University">
+            </a>
+            <a href="https://mbzuai.ac.ae/" aria-label="Mohamed bin Zayed University of Artificial Intelligence">
+              <img src="assets/logos/mbzuai.png" alt="MBZUAI">
+            </a>
+            <a href="https://www.berkeley.edu/" aria-label="University of California, Berkeley">
+              <img src="assets/logos/berkeley.svg" alt="UC Berkeley">
+            </a>
+          </div>
+          <div class="resource-row" aria-label="Project resources">
+            <a class="button primary" href="assets/flat_pack_bench_arxiv.pdf">Paper PDF</a>
+            <a class="button" href="#dataset">Explore Dataset</a>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <main class="page">
+      <aside class="toc" aria-label="Table of contents">
+        <p>Contents</p>
+        <a href="#overview">Overview</a>
+        <a href="#benchmark">Benchmark</a>
+        <a href="#dataset">Dataset Viewer</a>
+        <a href="#evaluation">Evaluation</a>
+        <a href="#results">Results</a>
+        <a href="#citation">Citation</a>
+      </aside>
+
+      <div class="content">
+        <section class="section" id="overview">
+          <div class="section-heading">
+            <p class="eyebrow">Overview</p>
+            <h2>Assembly videos expose gaps in visual temporal reasoning.</h2>
+          </div>
+          <p class="lead">
+            Flat-Pack Bench is a multiple-choice benchmark for fine-grained
+            spatio-temporal understanding. Each question asks a model to reason
+            about parts, contact events, assembly order, final connectivity, or
+            object identity across time in real furniture assembly videos.
+          </p>
+        </section>
+
+        <section class="section" id="benchmark">
+          <div class="section-heading">
+            <p class="eyebrow">Benchmark</p>
+            <h2>Four question families target complementary assembly skills.</h2>
+          </div>
+          <div class="metric-row benchmark-metrics" id="benchmark-stats" aria-live="polite"></div>
+          <div class="cards four">
+            <article class="info-card" data-category-card="temporal_loc">
+              <span class="tag tag-tloc">TLOC</span>
+              <strong class="category-count">103 questions</strong>
+              <h3>Temporal Localization</h3>
+              <p>Identify which connection happened first, last, next, or most recently relative to an assembly state.</p>
+            </article>
+            <article class="info-card" data-category-card="temporal_ord">
+              <span class="tag tag-tord">TORD</span>
+              <strong class="category-count">155 questions</strong>
+              <h3>Temporal Ordering</h3>
+              <p>Recover the exact order in which parts or part-pairs become physically connected.</p>
+            </article>
+            <article class="info-card" data-category-card="mating">
+              <span class="tag tag-mate">MATE</span>
+              <strong class="category-count">87 questions</strong>
+              <h3>Mating</h3>
+              <p>Determine whether two labeled parts are connected in the fully assembled furniture.</p>
+            </article>
+            <article class="info-card" data-category-card="tracking">
+              <span class="tag tag-track">TRACK</span>
+              <strong class="category-count">257 questions</strong>
+              <h3>Tracking</h3>
+              <p>Match labeled parts across two states, requiring object identity through occlusion and motion.</p>
+            </article>
+          </div>
+          <div class="split single">
+            <div>
+              <h3>Prompt construction</h3>
+              <p>
+                Questions combine a video with visual prompts that label the relevant parts.
+                Non-tracking questions use one annotated image, while tracking questions use
+                an Image A to Image B correspondence prompt.
+              </p>
+            </div>
+          </div>
+        </section>
+
+        <section class="section" id="dataset">
+          <div class="section-heading">
+            <p class="eyebrow">Dataset Viewer</p>
+            <h2>Switch between curated examples and the full benchmark browser.</h2>
+          </div>
+
+          <div class="viewer-shell" id="dataset-viewer">
+            <div class="viewer-toolbar">
+              <div>
+                <p class="small-label">View</p>
+                <div class="segmented view-switch" id="dataset-viewer-mode">
+                  <button type="button" data-viewer-mode="curated" class="active">Curated samples</button>
+                  <button type="button" data-viewer-mode="full">Full dataset</button>
+                </div>
+              </div>
+              <div id="curated-controls">
+                <p class="small-label">Sample</p>
+                <div class="segmented" id="example-tabs"></div>
+                <div class="category-legend" id="sample-legend" aria-label="Question family legend"></div>
+              </div>
+              <div>
+                <p class="small-label">Video</p>
+                <div class="segmented" id="dataset-video-mode">
+                  <button type="button" data-mode="keyframe" class="active">Keyframe</button>
+                  <button type="button" data-mode="trimmed">Trimmed</button>
+                </div>
+              </div>
+            </div>
+
+            <div class="dataset-controls" id="dataset-filters" role="search" hidden>
+              <label>
+                Search
+                <input id="dataset-search" type="search" placeholder="question, video, furniture, template">
+              </label>
+              <label>
+                Category
+                <select id="category-filter"></select>
+              </label>
+              <label>
+                Template
+                <select id="template-filter"></select>
+              </label>
+              <label>
+                Furniture
+                <select id="furniture-filter"></select>
+              </label>
+            </div>
+
+            <article class="dataset-detail" id="curated-detail"></article>
+
+            <div class="dataset-layout" id="full-dataset-view" hidden>
+              <div class="question-list-panel">
+                <div class="list-header">
+                  <span id="dataset-count">0 questions</span>
+                  <span class="keyboard-hint">Use J/K or arrow keys</span>
+                </div>
+                <div class="question-list" id="question-list"></div>
+              </div>
+              <article class="dataset-detail" id="dataset-detail"></article>
+            </div>
+          </div>
+        </section>
+
+        <section class="section" id="evaluation">
+          <div class="section-heading">
+            <p class="eyebrow">Evaluation</p>
+            <h2>Models are scored as multiple-choice video question answerers.</h2>
+          </div>
+          <div class="split">
+            <div>
+              <h3>Inputs</h3>
+              <p>
+                The evaluation compares keyframe videos, trimmed videos, and visual prompt
+                construction variants such as separate images, collages, and concatenated
+                prompt media.
+              </p>
+            </div>
+            <div>
+              <h3>Outputs</h3>
+              <p>
+                Models answer with an option label. We report micro-average accuracy and
+                per-category accuracy for TORD, TLOC, TRACK, and MATE.
+              </p>
+            </div>
+          </div>
+        </section>
+
+        <section class="section" id="results">
+          <div class="section-heading">
+            <p class="eyebrow">Results</p>
+            <h2>Current LVLMs remain far below human performance.</h2>
+          </div>
+          <div class="cards three">
+            <article class="score-card human">
+              <span>Human</span>
+              <strong>94.18</strong>
+              <p>micro-average accuracy</p>
+            </article>
+            <article class="score-card">
+              <span>Open models</span>
+              <strong>41.03</strong>
+              <p>InternVL3-78B in the paper's main benchmark setting</p>
+            </article>
+            <article class="score-card">
+              <span>Closed models</span>
+              <strong>37.71</strong>
+              <p>OpenAI GPT-5 in the paper's main benchmark setting</p>
+            </article>
+          </div>
+
+          <div class="results-panel results-collapsible" id="results-collapsible">
+            <button class="results-toggle" id="results-toggle" type="button" aria-expanded="false" aria-controls="results-table-region">
+              <span>Main results table</span>
+              <span data-results-toggle-label>Expand</span>
+            </button>
+            <div id="results-table-region" hidden>
+            <div class="results-controls">
+              <input id="results-search" type="search" placeholder="Filter result table by model">
+              <select id="results-prompt"></select>
+              <select id="results-video"></select>
+            </div>
+            <div class="table-wrap">
+              <table id="results-table">
+                <thead>
+                  <tr>
+                    <th data-sort="model">Model</th>
+                    <th data-sort="prompt">Prompt</th>
+                    <th data-sort="video">Video</th>
+                    <th data-sort="micro">Micro</th>
+                    <th>95% CI</th>
+                    <th data-sort="tord">TORD</th>
+                    <th data-sort="tloc">TLOC</th>
+                    <th data-sort="track">TRACK</th>
+                    <th data-sort="mate">MATE</th>
+                  </tr>
+                </thead>
+                <tbody></tbody>
+              </table>
+            </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="section" id="citation">
+          <div class="section-heading">
+            <p class="eyebrow">Citation</p>
+            <h2>BibTeX</h2>
+          </div>
+          <pre class="bibtex"><code>TBA</code></pre>
+        </section>
+      </div>
+    </main>
+
+    <div class="image-overlay" id="image-overlay" hidden>
+      <button class="image-overlay-close" type="button" aria-label="Close expanded prompt image">Close</button>
+      <figure>
+        <img alt="">
+        <figcaption></figcaption>
+      </figure>
+    </div>
+
+    <script type="module" src="assets/js/app.js?v=20260427-3"></script>
+  </body>
+</html>

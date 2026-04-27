@@ -1,0 +1,451 @@
+[
+  {
+    "qid_flat": "tracking/track_multi/0/Bench/KPs0ik2FcsY/061/0",
+    "question": {
+      "template_type": "track_multi",
+      "question_category": "tracking",
+      "vid_category": "Bench",
+      "furniture_name": "applaro",
+      "video_id": "KPs0ik2FcsY",
+      "frame_idx": [
+        22,
+        0
+      ],
+      "template_idx": 0,
+      "qid_flat": "tracking/track_multi/0/Bench/KPs0ik2FcsY/061/0",
+      "question": {
+        "raw_qstr": "Identify the correct set of matches from Image A to Image B.",
+        "qstr": "Identify the correct set of matches from Image A to Image B.\nOptions:\nA. Part 0 in Image A matches Part 0 in Image B, Part 1 in Image A matches Part 1 in Image B,  and Part 2 in Image A matches Part 2 in Image B\nB. Part 0 in Image A matches Part 1 in Image B, Part 1 in Image A matches Part 0 in Image B,  and Part 3 in Image A matches Part 3 in Image B\nC. Part 0 in Image A matches Part 1 in Image B, Part 1 in Image A matches Part 0 in Image B,  and Part 3 in Image A matches Part 2 in Image B\n",
+        "options": {
+          "0": {
+            "raw": [
+              [
+                "0",
+                "0"
+              ],
+              [
+                "1",
+                "1"
+              ],
+              [
+                "2",
+                "2"
+              ]
+            ],
+            "label": "A",
+            "text": "Part 0 in Image A matches Part 0 in Image B, Part 1 in Image A matches Part 1 in Image B,  and Part 2 in Image A matches Part 2 in Image B",
+            "full_text": "A. Part 0 in Image A matches Part 0 in Image B, Part 1 in Image A matches Part 1 in Image B,  and Part 2 in Image A matches Part 2 in Image B"
+          },
+          "1": {
+            "raw": [
+              [
+                "0",
+                "1"
+              ],
+              [
+                "1",
+                "0"
+              ],
+              [
+                "3",
+                "3"
+              ]
+            ],
+            "label": "B",
+            "text": "Part 0 in Image A matches Part 1 in Image B, Part 1 in Image A matches Part 0 in Image B,  and Part 3 in Image A matches Part 3 in Image B",
+            "full_text": "B. Part 0 in Image A matches Part 1 in Image B, Part 1 in Image A matches Part 0 in Image B,  and Part 3 in Image A matches Part 3 in Image B"
+          },
+          "2": {
+            "raw": [
+              [
+                "0",
+                "1"
+              ],
+              [
+                "1",
+                "0"
+              ],
+              [
+                "3",
+                "2"
+              ]
+            ],
+            "label": "C",
+            "text": "Part 0 in Image A matches Part 1 in Image B, Part 1 in Image A matches Part 0 in Image B,  and Part 3 in Image A matches Part 2 in Image B",
+            "full_text": "C. Part 0 in Image A matches Part 1 in Image B, Part 1 in Image A matches Part 0 in Image B,  and Part 3 in Image A matches Part 2 in Image B"
+          }
+        },
+        "correct_option": {
+          "raw": [
+            [
+              "0",
+              "1"
+            ],
+            [
+              "1",
+              "0"
+            ],
+            [
+              "3",
+              "2"
+            ]
+          ],
+          "label": "C",
+          "text": "Part 0 in Image A matches Part 1 in Image B, Part 1 in Image A matches Part 0 in Image B,  and Part 3 in Image A matches Part 2 in Image B",
+          "idx": 2,
+          "full_text": "C. Part 0 in Image A matches Part 1 in Image B, Part 1 in Image A matches Part 0 in Image B,  and Part 3 in Image A matches Part 2 in Image B"
+        },
+        "num_options": 3
+      },
+      "qid": "30bfaa5c118de322ee7ec198394be840bf651a076c72dc401aa148e2296e5c0d"
+    },
+    "responses": {
+      "Qwen2.5-VL-72B": {
+        "keyframe": {
+          "sep": {
+            "response": "```json\n{\n  \"answer\": \"C\",\n  \"explanation\": \"In Image A, Part 0 is the long horizontal piece forming the base of the bench. In Image B, this corresponds to Part 1, which is also the long horizontal base. Part 1 in Image A is the vertical side piece, which matches Part 0 in Image B, another vertical side piece. Finally, Part 3 in Image A is the smaller vertical piece that connects the sides, matching Part 2 in Image B, which is the corresponding connecting piece. Therefore, the correct matches are Part 0 in Image A to Part 1 in Image B, Part 1 in Image A to Part 0 in Image B, and Part 3 in Image A to Part 2 in Image B.\"\n}\n```",
+            "post_processed_response": "C"
+          }
+        }
+      },
+      "Gemini 2.5 Pro": {
+        "keyframe": {
+          "sep": {
+            "response": {
+              "response": "{\n  \"answer\": \"C\"\n}",
+              "thoughts": [
+                "**Identifying Part Correspondences Between Images**\n\nOkay, so I'm presented with two images, Image A and Image B, and I need to map the parts between them, based on their visual characteristics and a helpful video of the bench assembly. Let's break this down systematically.\n\nFirst, I examined Image A. I see a long side rail (Part 0), a slatted seat or shelf (Part 1), and a leg assembly being attached (Part 3). Then, looking at Image B, I identify the slatted seat/shelf again (Part 0), the long side rail (Part 1), and now two separate leg assemblies (Parts 2 and 3).  The video is key here, it reveals the assembly sequence.\n\nThe video shows the parts laid out, mirroring Image B, with the slatted part in the middle, two leg assemblies on either side, and the long side rail.  The assembly begins with attaching the first leg assembly (B:3 in the video) to the slatted part (B:0), then attaching the second leg assembly (B:2 in the video) to the other side of the slatted part. Finally, the long side rail is attached on top of these. Image A appears to capture a later stage.\n\nNow, let's establish the correspondences. The side rail, labeled as Part 0 in Image A, logically corresponds to the side rail labeled as Part 1 in Image B.  The slatted seat/shelf, Part 1 in Image A, matches the slatted part, Part 0 in Image B. Finally, the critical part is the leg assembly. Since the video shows the second leg assembly being attached in the later stage as depicted by Image A, Part 3 in Image A must match the *second* leg assembly, which is Part 2 in Image B.\n\nWith that logic laid out, I'll go through the options.\n\n*   Option A can be quickly discarded as the correspondences don't make sense.\n*   Option B is almost there, but the last part of the match is incorrect, due to a mix-up with the leg assemblies.  It wrongly matches A:3 to B:3.\n*   Option C nails it: A:0 to B:1 (side rail), A:1 to B:0 (slatted part), and crucially, A:3 to B:2 (right leg assembly).\n\nTherefore, I'm confident that Option C is the correct answer and represents the accurate mapping of parts between the two images, informed by the video's assembly sequence.\n"
+              ]
+            },
+            "post_processed_response": "C"
+          }
+        }
+      }
+    },
+    "video_id": "KPs0ik2FcsY",
+    "cot_error_tags": [
+      [
+        "Spatio-temporal Reasoning",
+        "+"
+      ]
+    ]
+  },
+  {
+    "qid_flat": "tracking/track_multi/0/Chair/FoVtnbm0hPc/064/0",
+    "question": {
+      "template_type": "track_multi",
+      "question_category": "tracking",
+      "vid_category": "Chair",
+      "furniture_name": "mammut_1",
+      "video_id": "FoVtnbm0hPc",
+      "frame_idx": [
+        1,
+        72
+      ],
+      "template_idx": 0,
+      "qid_flat": "tracking/track_multi/0/Chair/FoVtnbm0hPc/064/0",
+      "question": {
+        "raw_qstr": "Identify the correct set of matches from Image A to Image B.",
+        "qstr": "Identify the correct set of matches from Image A to Image B.\nOptions:\nA. Part 3 in Image A matches Part 4 in Image B, Part 2 in Image A matches Part 2 in Image B,  and Part 5 in Image A matches Part 5 in Image B\nB. Part 3 in Image A matches Part 3 in Image B, Part 2 in Image A matches Part 2 in Image B,  and Part 5 in Image A matches Part 5 in Image B\nC. Part 3 in Image A matches Part 5 in Image B, Part 2 in Image A matches Part 3 in Image B,  and Part 5 in Image A matches Part 2 in Image B\nD. Part 3 in Image A matches Part 4 in Image B, Part 2 in Image A matches Part 5 in Image B,  and Part 5 in Image A matches Part 2 in Image B\n",
+        "options": {
+          "0": {
+            "raw": [
+              [
+                "3",
+                "4"
+              ],
+              [
+                "2",
+                "2"
+              ],
+              [
+                "5",
+                "5"
+              ]
+            ],
+            "label": "A",
+            "text": "Part 3 in Image A matches Part 4 in Image B, Part 2 in Image A matches Part 2 in Image B,  and Part 5 in Image A matches Part 5 in Image B",
+            "full_text": "A. Part 3 in Image A matches Part 4 in Image B, Part 2 in Image A matches Part 2 in Image B,  and Part 5 in Image A matches Part 5 in Image B"
+          },
+          "1": {
+            "raw": [
+              [
+                "3",
+                "3"
+              ],
+              [
+                "2",
+                "2"
+              ],
+              [
+                "5",
+                "5"
+              ]
+            ],
+            "label": "B",
+            "text": "Part 3 in Image A matches Part 3 in Image B, Part 2 in Image A matches Part 2 in Image B,  and Part 5 in Image A matches Part 5 in Image B",
+            "full_text": "B. Part 3 in Image A matches Part 3 in Image B, Part 2 in Image A matches Part 2 in Image B,  and Part 5 in Image A matches Part 5 in Image B"
+          },
+          "2": {
+            "raw": [
+              [
+                "3",
+                "5"
+              ],
+              [
+                "2",
+                "3"
+              ],
+              [
+                "5",
+                "2"
+              ]
+            ],
+            "label": "C",
+            "text": "Part 3 in Image A matches Part 5 in Image B, Part 2 in Image A matches Part 3 in Image B,  and Part 5 in Image A matches Part 2 in Image B",
+            "full_text": "C. Part 3 in Image A matches Part 5 in Image B, Part 2 in Image A matches Part 3 in Image B,  and Part 5 in Image A matches Part 2 in Image B"
+          },
+          "3": {
+            "raw": [
+              [
+                "3",
+                "4"
+              ],
+              [
+                "2",
+                "5"
+              ],
+              [
+                "5",
+                "2"
+              ]
+            ],
+            "label": "D",
+            "text": "Part 3 in Image A matches Part 4 in Image B, Part 2 in Image A matches Part 5 in Image B,  and Part 5 in Image A matches Part 2 in Image B",
+            "full_text": "D. Part 3 in Image A matches Part 4 in Image B, Part 2 in Image A matches Part 5 in Image B,  and Part 5 in Image A matches Part 2 in Image B"
+          }
+        },
+        "correct_option": {
+          "raw": [
+            [
+              "3",
+              "4"
+            ],
+            [
+              "2",
+              "5"
+            ],
+            [
+              "5",
+              "2"
+            ]
+          ],
+          "label": "D",
+          "text": "Part 3 in Image A matches Part 4 in Image B, Part 2 in Image A matches Part 5 in Image B,  and Part 5 in Image A matches Part 2 in Image B",
+          "idx": 3,
+          "full_text": "D. Part 3 in Image A matches Part 4 in Image B, Part 2 in Image A matches Part 5 in Image B,  and Part 5 in Image A matches Part 2 in Image B"
+        },
+        "num_options": 4
+      },
+      "qid": "bad193cc666a7113fc955eba8b93b83ea707738f700e708a8cd50706a8ab3600"
+    },
+    "responses": {
+      "Qwen2.5-VL-72B": {
+        "keyframe": {
+          "sep": {
+            "response": "```json\n{\n  \"answer\": \"A\",\n  \"explanation\": \"To determine the correct matches between Image A and Image B, I carefully examined the labeled parts in both images and compared them with the video sequence. \\n\\n1. In Image A, Part 3 is a leg positioned on the right side of the seat. In Image B, this leg corresponds to Part 4, which is also located on the right side of the seat. Therefore, Part 3 in Image A matches Part 4 in Image B.\\n2. In Image A, Part 2 is a leg positioned on the left side of the seat. In Image B, this leg corresponds to Part 2, which is similarly located on the left side of the seat. Thus, Part 2 in Image A matches Part 2 in Image B.\\n3. In Image A, Part 5 is a leg positioned at the front center of the seat. In Image B, this leg corresponds to Part 5, which is also located at the front center of the seat. Consequently, Part 5 in Image A matches Part 5 in Image B.\\n\\nBy analyzing the positions and orientations of the parts in both images and correlating them with the video, it is clear that Option A correctly identifies the matches.\"\n}\n```",
+            "post_processed_response": "A"
+          }
+        }
+      },
+      "Gemini 2.5 Pro": {
+        "keyframe": {
+          "sep": {
+            "response": {
+              "response": "{\n  \"answer\": \"B\"\n}",
+              "thoughts": [
+                "**My Expert Analysis: Navigating the Murky Waters of Image Mapping**\n\nAlright, let's break this down. My task is to figure out how the individual parts in Image A correspond to those in Image B, based on a video showing the assembly process. I'm going to document my thinking here because even I get tripped up sometimes!\n\n**Phase 1: Image A Dissection**\n\nFirst, I need to understand Image A. I've got the seat base (Part 0), a backrest (Part 1), and four legs (Parts 2, 3, 4, and 5). It's a \"before\" snapshot, showing the legs ready to be attached. My primary concern here is that the labels are simply identifiers, not actual part numbers. The positions of the labels are based on a visual layout.\n\n**Phase 2: Video Deep Dive**\n\nNext, the video. This is the key. The assembler picks up the legs and attaches them to the seat base. I need to make sure I associate the correct part of the layout in Image A with the attachment positions.\n\n*   0:08 - 0:14: Assembler grabs a leg (labeled Part 4) and puts it in the back-right hole.\n*   0:45 - 0:50: Another leg (labeled Part 3) in the back-left hole.\n*   0:53 - 0:58: Another leg (labeled Part 5) in the front-right hole.\n*   1:04 - 1:08: The final leg (labeled Part 2) goes in the front-left hole.\n\n**Phase 3: Image B Deciphering**\n\nImage B shows the almost-complete chair, with four of the legs already attached. The remaining leg in the layout is being placed into the front left slot. The labels stay on the part being placed. I can associate each leg in B with a position.\n\n*   B:2: back-left leg.\n*   B:3: front-left leg.\n*   B:4: back-right leg.\n*   B:5: front-right leg.\n\n**Phase 4: The Mapping Mystery**\n\nNow, the crucial step: linking Image A and Image B. Based on the video, here are the key connections:\n\n*   Part 3 in A goes to B:2 (back-left), so A:3 -> B:2.\n*   Part 2 in A goes to B:3 (front-left), so A:2 -> B:3.\n*   Part 5 in A goes to B:5 (front-right), so A:5 -> B:5.\n*   Part 4 in A goes to B:4 (back-right), so A:4 -> B:4.\n\n**Phase 5: Option Evaluation - The Hunt for Truth**\n\nI'm now armed with this mapping, it's time to evaluate the given multiple-choice options. I need to find the option that matches my established connections. I start going through the options, one by one, to see if they're right:\n\n*   Option A is incorrect because two clauses don't match the established mapping.\n*   Option B is also incorrect, because two of the relationships are not valid.\n*   Option C is incorrect because two of its statements are wrong.\n*   Option D is incorrect, because all of its statements are invalid.\n\n**Phase 6: Re-evaluating. Can't be!**\n\nThat doesn't make any sense. There should be a correct option. Let's re-analyze. I go back to the image and video and recheck the labels. There's a slight pause. Is the assumption I made about the static labels being correct?\n\nAfter a lot of work, I go through everything one more time.\n\n*   Image A:\n    *   2 is the front-left leg.\n    *   3 is the back-left leg.\n    *   5 is the front-right leg.\n    *   4 is the back-right leg.\n*   Video:\n    *   0:08 - A:4 -> B:4\n    *   0:45 - A:3 -> B:2\n    *   0:53 - A:5 -> B:5\n    *   1:04 - A:2 -> B:3\n\nMy mapping is the same, so no errors yet.\n- A:2 -> B:3\n- A:3 -> B:2\n- A:5 -> B:5\nLet's double-check the image one more time.\n\nI keep reviewing, until I am positive I know what's"
+              ]
+            },
+            "post_processed_response": "B"
+          }
+        }
+      }
+    },
+    "video_id": "FoVtnbm0hPc",
+    "cot_error_tags": [
+      [
+        "Spatio-temporal Reasoning",
+        "-"
+      ],
+      [
+        "Object Grounding",
+        "-"
+      ]
+    ]
+  },
+  {
+    "qid_flat": "mating/2parts/0/Misc/D3kQDzdDwfA/133/0",
+    "question": {
+      "template_type": "2parts",
+      "question_category": "mating",
+      "vid_category": "Misc",
+      "furniture_name": "satsumas_2",
+      "video_id": "D3kQDzdDwfA",
+      "frame_idx": 86,
+      "template_idx": 0,
+      "qid_flat": "mating/2parts/0/Misc/D3kQDzdDwfA/133/0",
+      "question": {
+        "raw_qstr": "Are Part 0 and Part 6 connected in the fully-assembled furniture?",
+        "qstr": "Are Part 0 and Part 6 connected in the fully-assembled furniture?\nOptions:\nA. No\nB. Yes\n",
+        "options": {
+          "0": {
+            "raw": "No",
+            "label": "A",
+            "full_text": "A. No",
+            "text": "No"
+          },
+          "1": {
+            "raw": "Yes",
+            "label": "B",
+            "full_text": "B. Yes",
+            "text": "Yes"
+          }
+        },
+        "correct_option": {
+          "raw": "No",
+          "label": "A",
+          "text": "No",
+          "idx": 0,
+          "full_text": "A. No"
+        },
+        "num_options": 2
+      },
+      "qid": "f350ebd4b7b1c7910d8566fb2fc6a54c26fd96465550a7c0c04ebf162c4f1079"
+    },
+    "responses": {
+      "Qwen2.5-VL-72B": {
+        "keyframe": {
+          "sep": {
+            "response": "```json\n{\n  \"answer\": \"B\",\n  \"explanation\": \"In the video, I observed that Part 0 and Part 6 are indeed connected in the final assembled state of the furniture. The girl attaches Part 6 to the structure formed by Part 0 and other components. The labeled frame shows these parts in close proximity, indicating their connection. Additionally, the video confirms that these parts remain connected throughout the assembly process, without being disconnected later.\"\n}\n```",
+            "post_processed_response": "B"
+          }
+        }
+      },
+      "Gemini 2.5 Pro": {
+        "keyframe": {
+          "sep": {
+            "response": {
+              "response": "{\n  \"answer\": \"B\"\n}",
+              "thoughts": [
+                "**Connecting the Dots: Part 0 and Part 6**\n\nOkay, so the challenge is to determine if Part 0 and Part 6 are connected in the final assembly. Let's break this down systematically. First, I need to identify what these parts are. Looking at the diagram, Part 0 is clearly one of those circular trays, and Part 6 is one of the long vertical legs. Now, I need to understand how these pieces come together. The video provides the key here. It depicts the assembly of a multi-tiered plant stand. We've got these legs, and the trays attach at different heights. At around the 3-minute mark, the video shows the trays being attached to the leg assembly, and we see this process multiple times. Finally, the finished product clearly shows the trays directly attached to the legs.\n\nBased on this visual evidence and my knowledge of these types of assemblies, it's pretty clear that the trays (Part 0) are screwed directly into the legs (Part 6). So, they are, in fact, connected. The answer is obviously \"Yes.\" Therefore, the correct option is B. Now, to make sure the output is in the right format. It's a simple JSON object with the key \"answer\" and the value \"B\". Done.\n"
+              ]
+            },
+            "post_processed_response": "B"
+          }
+        }
+      }
+    },
+    "video_id": "D3kQDzdDwfA",
+    "cot_error_tags": [
+      [
+        "Physical Interaction",
+        "+"
+      ],
+      [
+        "Object Grounding",
+        "+"
+      ],
+      [
+        "Spatio-temporal Reasoning",
+        "-"
+      ]
+    ]
+  },
+  {
+    "qid_flat": "temporal_loc/1part_order/0/Chair/P_QFo8h1SX8/008/0",
+    "question": {
+      "template_type": "1part_order",
+      "question_category": "temporal_loc",
+      "vid_category": "Chair",
+      "furniture_name": "nordviken",
+      "video_id": "P_QFo8h1SX8",
+      "frame_idx": 33,
+      "template_idx": 0,
+      "qid_flat": "temporal_loc/1part_order/0/Chair/P_QFo8h1SX8/008/0",
+      "question": {
+        "raw_qstr": "Which of the highlighted parts are connected (brought in direct physical contact) to Part 0 next starting from the assembly state shown in the image?",
+        "qstr": "Which of the highlighted parts are connected (brought in direct physical contact) to Part 0 next starting from the assembly state shown in the image?\nOptions:\nA. Part 4\nB. Part 5\nC. Part 2\nD. None of the options are correct\n",
+        "options": {
+          "0": {
+            "raw": "4",
+            "label": "A",
+            "text": "Part 4",
+            "full_text": "A. Part 4"
+          },
+          "1": {
+            "raw": "5",
+            "label": "B",
+            "text": "Part 5",
+            "full_text": "B. Part 5"
+          },
+          "2": {
+            "raw": "2",
+            "label": "C",
+            "text": "Part 2",
+            "full_text": "C. Part 2"
+          },
+          "3": {
+            "raw": "none",
+            "label": "D",
+            "text": "None of the options are correct",
+            "full_text": "D. None of the options are correct"
+          }
+        },
+        "correct_option": {
+          "raw": "4",
+          "label": "A",
+          "text": "Part 4",
+          "idx": 0,
+          "full_text": "A. Part 4"
+        },
+        "num_options": 4
+      },
+      "qid": "5a58dac5943c6c732ee78f817874e393f72a5b81ba3ea1cb8edcaa36a3f4f838"
+    },
+    "responses": {
+      "Qwen2.5-VL-72B": {
+        "keyframe": {
+          "sep": {
+            "response": "```json\n{\n  \"answer\": \"C\",\n  \"explanation\": \"In the video, after the initial state shown in the image, Part 2 is brought into direct physical contact with Part 0. The person in the video aligns and attaches Part 2 to Part 0 using screws, indicating that these two parts are connected next. Parts 4 and 5 are not connected to Part 0 immediately after the state shown in the image; they are handled later in the assembly process.\"\n}\n```",
+            "post_processed_response": "C"
+          }
+        }
+      },
+      "Gemini 2.5 Pro": {
+        "keyframe": {
+          "sep": {
+            "response": {
+              "response": "{\n  \"answer\": \"D\"\n}",
+              "thoughts": [
+                "**My Expert Analysis and Deduction**\n\nOkay, here's what I've concluded after going through the steps. The user wants me to determine which of the labeled parts will be physically connected to \"Part 0\" next, given the assembly state shown in the image and following the video sequence.\n\nInitially, I broke down the visual information. I identified Part 0 as the main side frame and saw the other labeled parts, including the crossbars and the other side of the chair. I watched the video from the image's timestamp, noting the order of assembly. It became clear the video focused on attaching dowels, then a backrest, and finally the seat, leaving out the attachment of any crossbars.\n\nI then revisited the question, emphasizing that I needed to consider only parts in \"direct physical contact\" with Part 0 in the immediate next step shown in the video. I carefully watched the video from the labeled timestamp. A vertical backrest support seemed to be the next piece to be connected to the Part 0 assembly, which is not among the option provided. However, there was a point in the process where a back support was attached between the two side frames.\n\nReconsidering the options, I focused on Parts 2, 4, and 5\u2014which are crossbars\u2014that are not attached, and the question is \"What connects *next*?\". Examining the frame showed that the video *did not* connect any of these crossbars next to Part 0 in this specific part of the video. The video seemed to jump to the seat attachment.\n\nUltimately, I interpreted the question literally. My analysis strongly suggests that, *based on what's visible in the video*, none of the provided parts are the next to connect to Part 0. The backrest upright connects next to Part 0, not these crossbars. The question might be flawed or there is a missing step in the video to justify an answer from options. The answer has to be: D. None of the options.\n"
+              ]
+            },
+            "post_processed_response": "D"
+          }
+        }
+      }
+    },
+    "video_id": "P_QFo8h1SX8",
+    "cot_error_tags": [
+      [
+        "Spatio-temporal Reasoning",
+        "-"
+      ],
+      [
+        "Physical Interaction",
+        "-"
+      ]
+    ]
+  }
+]
