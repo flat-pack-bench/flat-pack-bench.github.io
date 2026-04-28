@@ -8,7 +8,7 @@
       content="Flat-Pack Bench evaluates spatio-temporal video understanding in large vision-language models through furniture assembly."
     >
     <title>Flat-Pack Bench</title>
-    <link rel="stylesheet" href="assets/css/styles.css?v=20260427-9">
+    <link rel="stylesheet" href="assets/css/styles.css?v=20260428-5">
   </head>
   <body>
     <header class="hero" id="top">
@@ -30,21 +30,21 @@
             <span class="sc-cap">F</span><span class="sc-small">LAT</span><span class="sc-punct">-</span><span class="sc-cap">P</span><span class="sc-small">ACK</span><span class="sc-cap sc-word">B</span><span class="sc-small">ENCH</span>
           </h1>
           <p class="subtitle">
-            Evaluating spatio-temporal understanding in large vision-language models
-            through fine-grained furniture assembly questions.
+            Evaluating Spatio-Temporal Understanding in Large Vision-Language Models
+            through Furniture Assembly
           </p>
           <p class="authors">
-            <span class="author-affiliation affiliation-cornell">Aditya Chetan</span>,
-            <span class="author-affiliation affiliation-cornell">Eric Cai</span>,
-            Peeyush Kushwaha,
-            <span class="author-affiliation affiliation-cornell">Bharath Raj Nagoor Kani</span>,
-            <span class="author-affiliation affiliation-mbzuai">Utkarsh Mall</span>,
-            <span class="author-affiliation affiliation-ucb">Qianqian Wang</span>,
-            <span class="author-affiliation affiliation-cornell">Noah Snavely</span>,
-            <span class="author-affiliation affiliation-cornell">Bharath Hariharan</span>
+            <a class="author-affiliation affiliation-cornell" href="https://justachetan.github.io/">Aditya Chetan</a>,
+            <a class="author-affiliation affiliation-cornell" href="https://www.linkedin.com/in/ericcai32/">Eric Cai</a>,
+            <a class="author-link" href="https://peey.github.io/">Peeyush Kushwaha</a>,
+            <a class="author-affiliation affiliation-cornell" href="https://bharathrajn.com/">Bharath Raj Nagoor Kani</a>,
+            <a class="author-affiliation affiliation-mbzuai" href="https://utkarshmall.com/">Utkarsh Mall</a>,
+            <a class="author-affiliation affiliation-ucb" href="https://qianqianwang68.github.io/">Qianqian Wang</a>,
+            <a class="author-affiliation affiliation-cornell" href="https://www.cs.cornell.edu/~snavely/">Noah Snavely</a>,
+            <a class="author-affiliation affiliation-cornell" href="https://www.cs.cornell.edu/~bharathh/">Bharath Hariharan</a>
           </p>
           <p class="paper-status">
-            <a href="https://cvpr.thecvf.com/">To appear in CVPR 2026</a>
+            <a href="https://cvpr.thecvf.com/">✨ CVPR 2026 ✨</a>
           </p>
           <div class="affiliation-logos" aria-label="Author affiliations">
             <a class="affiliation-cornell" href="https://www.cornell.edu/" aria-label="Cornell University">
@@ -187,11 +187,6 @@
                   <button type="button" data-viewer-mode="full">Full dataset</button>
                 </div>
               </div>
-              <div id="curated-controls">
-                <p class="small-label">Sample</p>
-                <div class="segmented" id="example-tabs"></div>
-                <div class="category-legend" id="sample-legend" aria-label="Question family legend"></div>
-              </div>
               <div>
                 <p class="small-label">Video</p>
                 <div class="segmented" id="dataset-video-mode">
@@ -220,7 +215,17 @@
               </label>
             </div>
 
-            <article class="dataset-detail" id="curated-detail"></article>
+            <div class="dataset-layout" id="curated-sample-view">
+              <div class="question-list-panel">
+                <div class="list-header">
+                  <span id="sample-count">0 curated samples</span>
+                  <span class="keyboard-hint">Use arrow keys</span>
+                </div>
+                <div class="question-list" id="example-tabs"></div>
+                <div class="category-legend" id="sample-legend" aria-label="Question family legend"></div>
+              </div>
+              <article class="dataset-detail" id="curated-detail"></article>
+            </div>
 
             <div class="dataset-layout" id="full-dataset-view" hidden>
               <div class="question-list-panel">
@@ -229,6 +234,7 @@
                   <span class="keyboard-hint">Use J/K or arrow keys</span>
                 </div>
                 <div class="question-list" id="question-list"></div>
+                <div class="category-legend" id="dataset-legend" aria-label="Question family legend"></div>
               </div>
               <article class="dataset-detail" id="dataset-detail"></article>
             </div>
@@ -333,6 +339,6 @@
       </figure>
     </div>
 
-    <script type="module" src="assets/js/app.js?v=20260427-6"></script>
+    <script type="module" src="assets/js/app.js?v=20260428-2"></script>
   </body>
 </html>

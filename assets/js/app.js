@@ -51,6 +51,7 @@ const $ = (selector, root = document) => root.querySelector(selector);
 const $$ = (selector, root = document) => Array.from(root.querySelectorAll(selector));
 
 setupTableOfContents();
+setupAffiliationHover();
 
 init().catch((error) => {
   console.error(error);
@@ -119,6 +120,45 @@ async function loadJsonOptional(path, fallback) {
   return response.json();
 }
 
+function setupAffiliationHover() {
+  const heroCopy = $(".hero-copy");
+  if (!heroCopy) return;
+
+  const affiliations = ["cornell", "mbzuai", "ucb"];
+  const activate = (affiliation, source) => {
+    heroCopy.dataset.activeAffiliation = affiliation;
+    heroCopy.dataset.hoverSource = source;
+  };
+  const clear = (affiliation, source) => {
+    if (
+      heroCopy.dataset.activeAffiliation === affiliation &&
+      heroCopy.dataset.hoverSource === source
+    ) {
+      delete heroCopy.dataset.activeAffiliation;
+      delete heroCopy.dataset.hoverSource;
+    }
+  };
+
+  affiliations.forEach((affiliation) => {
+    const authors = $$(`.authors .affiliation-${affiliation}`, heroCopy);
+    const logos = $$(`.affiliation-logos > .affiliation-${affiliation}`, heroCopy);
+
+    authors.forEach((author) => {
+      author.addEventListener("pointerenter", () => activate(affiliation, "author"));
+      author.addEventListener("pointerleave", () => clear(affiliation, "author"));
+      author.addEventListener("focus", () => activate(affiliation, "author"));
+      author.addEventListener("blur", () => clear(affiliation, "author"));
+    });
+
+    logos.forEach((logo) => {
+      logo.addEventListener("pointerenter", () => activate(affiliation, "logo"));
+      logo.addEventListener("pointerleave", () => clear(affiliation, "logo"));
+      logo.addEventListener("focus", () => activate(affiliation, "logo"));
+      logo.addEventListener("blur", () => clear(affiliation, "logo"));
+    });
+  });
+}
+
 function renderBenchmarkStats() {
   const container = $("#benchmark-stats");
   if (!container) return;
@@ -165,6 +205,11 @@ function renderCategoryLegend(selector) {
 function setupCuratedControls() {
   const tabs = $("#example-tabs");
   if (!tabs || state.examples.length === 0) return;
+
+  const sampleCount = $("#sample-count");
+  if (sampleCount) {
+    sampleCount.textContent = `${state.examples.length} curated sample${state.examples.length === 1 ? "" : "s"}`;
+  }
 
   tabs.innerHTML = state.examples
     .map((entry, index) => {
@@ -221,6 +266,7 @@ function renderCuratedDetail() {
 
 function setupDatasetViewer() {
   setupCuratedControls();
+  renderCategoryLegend("#dataset-legend");
   populateSelect("#category-filter", unique(state.questions.map((q) => q.question_category)), "All categories", categoryLabel);
   populateSelect("#template-filter", unique(state.questions.map((q) => q.template_type)), "All templates");
   populateSelect("#furniture-filter", unique(state.questions.map((q) => q.furniture_name)), "All furniture");
@@ -296,8 +342,7 @@ function setViewerMode(mode, options = {}) {
 
 function syncViewerMode() {
   const isFull = state.viewerMode === "full";
-  $("#curated-detail")?.toggleAttribute("hidden", isFull);
-  $("#curated-controls")?.toggleAttribute("hidden", isFull);
+  $("#curated-sample-view")?.toggleAttribute("hidden", isFull);
   $("#dataset-filters")?.toggleAttribute("hidden", !isFull);
   $("#full-dataset-view")?.toggleAttribute("hidden", !isFull);
   $$("#dataset-viewer-mode button").forEach((button) => {
@@ -534,6 +579,22 @@ function moveDatasetSelection(step) {
   const nextIndex = clamp(index + step, 0, state.filteredQuestions.length - 1);
   selectDatasetQuestion(state.filteredQuestions[nextIndex].qid_flat);
   $("#question-list button.active")?.scrollIntoView({ block: "nearest" });
+}
+
+function moveCuratedSelection(step) {
+  if (state.examples.length === 0) return;
+  state.exampleIndex = clamp(state.exampleIndex + step, 0, state.examples.length - 1);
+  renderCuratedDetail();
+  $("#example-tabs button.active")?.scrollIntoView({ block: "nearest", inline: "nearest" });
+}
+
+function isDatasetViewerKeyboardContext() {
+  const viewer = $("#dataset-viewer");
+  if (!viewer) return false;
+  if (viewer.contains(document.activeElement)) return true;
+
+  const rect = viewer.getBoundingClientRect();
+  return rect.top < window.innerHeight && rect.bottom > 0;
 }
 
 function setupResultsTable() {
@@ -1008,12 +1069,17 @@ function setupGlobalEvents() {
     if (!$("#image-overlay")?.hidden) return;
     const tagName = document.activeElement?.tagName;
     if (["INPUT", "SELECT", "TEXTAREA"].includes(tagName)) return;
-    if (state.viewerMode !== "full") return;
-    if (["ArrowRight", "ArrowDown", "j", "J"].includes(event.key)) {
-      moveDatasetSelection(1);
-    }
-    if (["ArrowLeft", "ArrowUp", "k", "K"].includes(event.key)) {
-      moveDatasetSelection(-1);
+    if (!isDatasetViewerKeyboardContext()) return;
+    const isNextKey = ["ArrowRight", "ArrowDown", "j", "J"].includes(event.key);
+    const isPreviousKey = ["ArrowLeft", "ArrowUp", "k", "K"].includes(event.key);
+    if (!isNextKey && !isPreviousKey) return;
+
+    event.preventDefault();
+    const step = isNextKey ? 1 : -1;
+    if (state.viewerMode === "full") {
+      moveDatasetSelection(step);
+    } else {
+      moveCuratedSelection(step);
     }
   });
 }
