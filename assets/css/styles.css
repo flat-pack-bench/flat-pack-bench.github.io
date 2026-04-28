@@ -366,10 +366,32 @@ h3 {
   box-shadow: 0 8px 20px rgba(43, 35, 22, 0.08);
 }
 
+.resource-row .button {
+  transition:
+    background-color 160ms ease,
+    border-color 160ms ease,
+    color 160ms ease,
+    box-shadow 160ms ease,
+    transform 160ms ease;
+}
+
+.resource-row .button:not(.disabled):hover,
+.resource-row .button:not(.disabled):focus-visible {
+  background: var(--paper-strong);
+  border-color: var(--ink);
+  box-shadow: 0 12px 26px rgba(43, 35, 22, 0.14);
+  transform: translateY(-1px);
+}
+
 .button-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   width: 18px;
   height: 18px;
   flex: 0 0 auto;
+  font-size: 1rem;
+  line-height: 1;
   fill: none;
   stroke: currentColor;
   stroke-width: 1.8;
