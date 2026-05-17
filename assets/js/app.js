@@ -27,6 +27,11 @@ const CATEGORY_META = {
 const REVEAL_STORAGE_KEY = "flatpack:showGroundTruthAndResponses";
 const REVEAL_SHOW_LABEL = "Click to see the ground-truth and model responses!";
 const REVEAL_HIDE_LABEL = "Hide the ground-truth and model responses";
+const RESULT_FILTER_LABELS = {
+  model: "Model",
+  prompt: "Prompt",
+  video: "Video",
+};
 
 const state = {
   questions: [],
@@ -45,6 +50,7 @@ const state = {
   filteredQuestions: [],
   showGroundTruthAndResponses: false,
   resultsSort: { key: "micro", direction: "desc" },
+  resultsFilters: [],
 };
 
 const $ = (selector, root = document) => root.querySelector(selector);
@@ -598,11 +604,32 @@ function isDatasetViewerKeyboardContext() {
 }
 
 function setupResultsTable() {
-  populateSelect("#results-prompt", unique(state.results.map((row) => row.prompt)), "All prompts");
-  populateSelect("#results-video", unique(state.results.map((row) => row.video)), "All videos");
+  updateResultsFilterOptions();
 
-  ["#results-search", "#results-prompt", "#results-video"].forEach((selector) => {
-    $(selector)?.addEventListener("input", renderResultsTable);
+  $("#results-search")?.addEventListener("input", renderResultsTable);
+  $("#results-filter-field")?.addEventListener("change", () => {
+    const input = $("#results-filter-value");
+    if (input) input.value = "";
+    updateResultsFilterOptions();
+  });
+  $("#results-filter-form")?.addEventListener("submit", (event) => {
+    event.preventDefault();
+    addResultsFilter($("#results-filter-field")?.value, $("#results-filter-value")?.value);
+    const input = $("#results-filter-value");
+    if (input) {
+      input.value = "";
+      input.focus();
+    }
+  });
+  $("#active-results-filters")?.addEventListener("click", (event) => {
+    const button = event.target.closest("button[data-filter-field]");
+    if (!button) return;
+    removeResultsFilter(button.dataset.filterField, button.dataset.filterValue);
+  });
+  $("#results-table tbody")?.addEventListener("click", (event) => {
+    const button = event.target.closest("button[data-result-filter-field]");
+    if (!button) return;
+    addResultsFilter(button.dataset.resultFilterField, button.dataset.resultFilterValue);
   });
 
   $$("#results-table th[data-sort]").forEach((header) => {
@@ -638,31 +665,126 @@ function renderResultsTable() {
   const tbody = $("#results-table tbody");
   if (!tbody) return;
   const search = ($("#results-search")?.value || "").trim().toLowerCase();
-  const prompt = $("#results-prompt")?.value || "";
-  const video = $("#results-video")?.value || "";
+  const groupedFilters = groupResultsFilters();
 
   const rows = state.results
     .filter((row) => {
-      if (prompt && row.prompt !== prompt) return false;
-      if (video && row.video !== video) return false;
-      if (search && !row.model.toLowerCase().includes(search)) return false;
+      const haystack = [row.model, row.prompt, row.video].join(" ").toLowerCase();
+      if (search && !haystack.includes(search)) return false;
+      if (!matchesResultsFilters(row, groupedFilters)) return false;
       return true;
     })
     .sort((a, b) => compareRows(a, b, state.resultsSort.key, state.resultsSort.direction));
 
-  tbody.innerHTML = rows
-    .map((row) => `
-      <tr>
-        <td>${escapeHtml(row.model)}</td>
-        <td>${escapeHtml(row.prompt)}</td>
-        <td>${escapeHtml(row.video)}</td>
-        <td class="num">${formatScore(row.micro)}</td>
-        <td class="num">${escapeHtml(row.ci || "")}</td>
-        <td class="num">${formatScore(row.tord)}</td>
-        <td class="num">${formatScore(row.tloc)}</td>
-        <td class="num">${formatScore(row.track)}</td>
-        <td class="num">${formatScore(row.mate)}</td>
-      </tr>
+  const count = $("#results-count");
+  if (count) {
+    count.textContent = `${rows.length} configuration${rows.length === 1 ? "" : "s"}`;
+  }
+
+  updateResultsFiltersUi();
+
+  if (rows.length === 0) {
+    tbody.innerHTML = `<tr><td class="empty-table" colspan="9">No configurations match the current filters.</td></tr>`;
+    return;
+  }
+
+  tbody.innerHTML = rows.map(renderResultsRow).join("");
+}
+
+function renderResultsRow(row) {
+  return `
+    <tr>
+      <td>${renderResultsFilterButton("model", row.model)}</td>
+      <td>${renderResultsFilterButton("prompt", row.prompt)}</td>
+      <td>${renderResultsFilterButton("video", row.video)}</td>
+      <td class="num">${formatScore(row.micro)}</td>
+      <td class="num">${escapeHtml(row.ci || "")}</td>
+      <td class="num">${formatScore(row.tord)}</td>
+      <td class="num">${formatScore(row.tloc)}</td>
+      <td class="num">${formatScore(row.track)}</td>
+      <td class="num">${formatScore(row.mate)}</td>
+    </tr>
+  `;
+}
+
+function renderResultsFilterButton(field, value) {
+  return `
+    <button
+      type="button"
+      class="result-filter-button"
+      data-result-filter-field="${escapeHtml(field)}"
+      data-result-filter-value="${escapeHtml(value)}"
+      title="Filter by ${escapeHtml(RESULT_FILTER_LABELS[field] || field)}: ${escapeHtml(value)}"
+    >${escapeHtml(value)}</button>
+  `;
+}
+
+function addResultsFilter(field, value) {
+  if (!Object.prototype.hasOwnProperty.call(RESULT_FILTER_LABELS, field)) return;
+  const canonical = canonicalResultFilterValue(field, value);
+  if (!canonical) return;
+  const exists = state.resultsFilters.some((filter) => filter.field === field && filter.value === canonical);
+  if (exists) return;
+  state.resultsFilters.push({ field, value: canonical });
+  renderResultsTable();
+}
+
+function removeResultsFilter(field, value) {
+  state.resultsFilters = state.resultsFilters.filter((filter) => !(filter.field === field && filter.value === value));
+  renderResultsTable();
+}
+
+function groupResultsFilters() {
+  return state.resultsFilters.reduce((groups, filter) => {
+    if (!groups[filter.field]) groups[filter.field] = [];
+    groups[filter.field].push(filter.value);
+    return groups;
+  }, {});
+}
+
+function matchesResultsFilters(row, groupedFilters) {
+  return Object.entries(groupedFilters).every(([field, values]) => values.some((value) => row[field] === value));
+}
+
+function updateResultsFilterOptions() {
+  const field = $("#results-filter-field")?.value || "model";
+  const options = $("#results-filter-options");
+  if (!options) return;
+  options.innerHTML = resultFilterValues(field)
+    .map((value) => `<option value="${escapeHtml(value)}"></option>`)
+    .join("");
+}
+
+function resultFilterValues(field) {
+  if (!Object.prototype.hasOwnProperty.call(RESULT_FILTER_LABELS, field)) return [];
+  return unique(state.results.map((row) => row[field]));
+}
+
+function canonicalResultFilterValue(field, value) {
+  const normalized = String(value || "").trim();
+  if (!normalized) return "";
+  const match = resultFilterValues(field).find((candidate) => String(candidate).toLowerCase() === normalized.toLowerCase());
+  return match || normalized;
+}
+
+function updateResultsFiltersUi() {
+  const container = $("#active-results-filters");
+  if (!container) return;
+  if (state.resultsFilters.length === 0) {
+    container.innerHTML = `<span class="results-meta">Tip: click a model, prompt, or video to pin it as a filter.</span>`;
+    return;
+  }
+  container.innerHTML = state.resultsFilters
+    .map((filter) => `
+      <span class="filter-pill">
+        ${escapeHtml(RESULT_FILTER_LABELS[filter.field] || filter.field)}: ${escapeHtml(filter.value)}
+        <button
+          type="button"
+          aria-label="Remove ${escapeHtml(RESULT_FILTER_LABELS[filter.field] || filter.field)} filter ${escapeHtml(filter.value)}"
+          data-filter-field="${escapeHtml(filter.field)}"
+          data-filter-value="${escapeHtml(filter.value)}"
+        >x</button>
+      </span>
     `)
     .join("");
 }

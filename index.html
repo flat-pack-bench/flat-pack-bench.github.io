@@ -289,29 +289,43 @@
               <span data-results-toggle-label>Expand</span>
             </button>
             <div id="results-table-region" hidden>
-            <div class="results-controls">
-              <input id="results-search" type="search" placeholder="Filter result table by model">
-              <select id="results-prompt"></select>
-              <select id="results-video"></select>
-            </div>
-            <div class="table-wrap">
-              <table id="results-table">
-                <thead>
-                  <tr>
-                    <th data-sort="model">Model</th>
-                    <th data-sort="prompt">Prompt</th>
-                    <th data-sort="video">Video</th>
-                    <th data-sort="micro">Micro</th>
-                    <th>95% CI</th>
-                    <th data-sort="tord">TORD</th>
-                    <th data-sort="tloc">TLOC</th>
-                    <th data-sort="track">TRACK</th>
-                    <th data-sort="mate">MATE</th>
-                  </tr>
-                </thead>
-                <tbody></tbody>
-              </table>
-            </div>
+              <div class="results-toolbar">
+                <label class="results-search" for="results-search">
+                  <span>Search</span>
+                  <input id="results-search" type="search" placeholder="Filter by model, prompt, or video">
+                </label>
+                <span class="results-meta" id="results-count" aria-live="polite">0 configurations</span>
+              </div>
+              <div class="results-filters" id="active-results-filters" aria-live="polite"></div>
+              <form class="filter-form" id="results-filter-form">
+                <label for="results-filter-field">Add filter</label>
+                <select id="results-filter-field">
+                  <option value="model">Model</option>
+                  <option value="prompt">Prompt</option>
+                  <option value="video">Video</option>
+                </select>
+                <input id="results-filter-value" type="text" placeholder="Exact value" list="results-filter-options" autocomplete="off">
+                <button type="submit">Add</button>
+              </form>
+              <datalist id="results-filter-options"></datalist>
+              <div class="table-wrap">
+                <table id="results-table">
+                  <thead>
+                    <tr>
+                      <th data-sort="model">Model</th>
+                      <th data-sort="prompt">Prompt</th>
+                      <th data-sort="video">Video</th>
+                      <th data-sort="micro">Micro</th>
+                      <th>95% CI</th>
+                      <th data-sort="tord">TORD</th>
+                      <th data-sort="tloc">TLOC</th>
+                      <th data-sort="track">TRACK</th>
+                      <th data-sort="mate">MATE</th>
+                    </tr>
+                  </thead>
+                  <tbody></tbody>
+                </table>
+              </div>
             </div>
           </div>
         </section>
