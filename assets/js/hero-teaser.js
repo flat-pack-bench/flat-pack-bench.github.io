@@ -39,15 +39,15 @@ function initHeroTeaser(container) {
 
   const clock = new THREE.Clock();
   const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-  const LOOP_DURATION = 11.3;
-  const SETUP_FADE_START = 1;
-  const SETUP_FADE_END = 1.4;
-  const OUTRO_START = 8.53;
-  const OUTRO_END = 9.5;
-  const INTRO_LOOK_BACK_START = 0.16;
-  const INTRO_LOOK_BACK_END = 1;
-  const THOUGHT_APPEAR_START = 0.08;
-  const THOUGHT_CLEAR_START = 9.53;
+  const LOOP_DURATION = 11.7;
+  const SETUP_FADE_START = 1.4;
+  const SETUP_FADE_END = 1.8;
+  const OUTRO_START = 8.93;
+  const OUTRO_END = 9.9;
+  const INTRO_LOOK_BACK_START = 0.56;
+  const INTRO_LOOK_BACK_END = 1.4;
+  const THOUGHT_APPEAR_START = 0.48;
+  const THOUGHT_CLEAR_START = 9.93;
   const MONITOR_X = 0.24;
   const MONITOR_Z = 0.08;
 
@@ -298,12 +298,12 @@ function initHeroTeaser(container) {
   }
 
   const letterParts = [
-    { key: "stem", start: 1.4, end: 2.36, final: [-120, 0, 56, 288, 0], intro: [-310, 150, -0.5], variant: "red" },
-    { key: "top", start: 1.72, end: 2.67, final: [-2, -116, 228, 56, 0], intro: [270, -215, 0.44], variant: "red" },
-    { key: "middle", start: 2.04, end: 2.96, final: [-10, -14, 178, 54, 0], intro: [300, 116, -0.62], variant: "red" },
-    { key: "p-right", start: 3.93, end: 4.95, final: [108, -64, 56, 154, 0], intro: [315, -28, 0.68], variant: "green" },
-    { key: "b-right", start: 5.87, end: 6.91, final: [108, 78, 56, 150, 0], intro: [310, 220, -0.58], variant: "blue" },
-    { key: "bottom", start: 6.25, end: 7.27, final: [-2, 128, 228, 56, 0], intro: [-305, 244, 0.5], variant: "blue" },
+    { key: "stem", start: 1.8, end: 2.76, final: [-120, 0, 56, 288, 0], intro: [-310, 150, -0.5], variant: "red" },
+    { key: "top", start: 2.12, end: 3.07, final: [-2, -116, 228, 56, 0], intro: [270, -215, 0.44], variant: "red" },
+    { key: "middle", start: 2.44, end: 3.36, final: [-10, -14, 178, 54, 0], intro: [300, 116, -0.62], variant: "red" },
+    { key: "p-right", start: 4.33, end: 5.35, final: [108, -64, 56, 154, 0], intro: [315, -28, 0.68], variant: "green" },
+    { key: "b-right", start: 6.27, end: 7.31, final: [108, 78, 56, 150, 0], intro: [310, 220, -0.58], variant: "blue" },
+    { key: "bottom", start: 6.65, end: 7.67, final: [-2, 128, 228, 56, 0], intro: [-305, 244, 0.5], variant: "blue" },
   ];
 
   function partTransform(part, t) {
@@ -437,11 +437,11 @@ function initHeroTeaser(container) {
     const cloudAlpha = easeInOut((t - (THOUGHT_APPEAR_START + 0.52)) / 0.44) * thoughtFadeOut;
     const cloudScale = 0.88 + 0.12 * clamp(easeOutBack((t - (THOUGHT_APPEAR_START + 0.5)) / 0.56), 0, 1.08);
     const contentAlpha = cloudAlpha;
-    const fAlpha = easeInOut((t - 3.3) / 0.42) * contentAlpha;
-    const pAlpha = easeInOut((t - 5.31) / 0.48) * contentAlpha;
-    const bAlpha = easeInOut((t - 7.53) / 0.52) * contentAlpha;
-    const arrowOneAlpha = easeInOut((t - 5.25) / 0.44) * contentAlpha;
-    const arrowTwoAlpha = easeInOut((t - 7.45) / 0.44) * contentAlpha;
+    const fAlpha = easeInOut((t - 3.7) / 0.42) * contentAlpha;
+    const pAlpha = easeInOut((t - 5.71) / 0.48) * contentAlpha;
+    const bAlpha = easeInOut((t - 7.93) / 0.52) * contentAlpha;
+    const arrowOneAlpha = easeInOut((t - 5.65) / 0.44) * contentAlpha;
+    const arrowTwoAlpha = easeInOut((t - 7.85) / 0.44) * contentAlpha;
 
     bubbleCtx.save();
     bubbleCtx.globalAlpha = cloudAlpha;
@@ -476,9 +476,9 @@ function initHeroTeaser(container) {
       drawWeightedThoughtDot(bubbleCtx, x, y, radius, dotAlpha, dotScale);
     });
 
-    drawMiniLetter(bubbleCtx, "F", 194, 148, 0.3, fAlpha, t >= 3.3 && t < 5.31, timeSeconds);
-    drawMiniLetter(bubbleCtx, "P", 380, 148, 0.3, pAlpha, t >= 5.31 && t < 7.53, timeSeconds);
-    drawMiniLetter(bubbleCtx, "B", 566, 148, 0.3, bAlpha, t >= 7.53 && t < THOUGHT_CLEAR_START, timeSeconds);
+    drawMiniLetter(bubbleCtx, "F", 194, 148, 0.3, fAlpha, t >= 3.7 && t < 5.71, timeSeconds);
+    drawMiniLetter(bubbleCtx, "P", 380, 148, 0.3, pAlpha, t >= 5.71 && t < 7.93, timeSeconds);
+    drawMiniLetter(bubbleCtx, "B", 566, 148, 0.3, bAlpha, t >= 7.93 && t < THOUGHT_CLEAR_START, timeSeconds);
     drawArrow(bubbleCtx, 250, 146, 314, 146, arrowOneAlpha);
     drawArrow(bubbleCtx, 436, 146, 500, 146, arrowTwoAlpha);
 
@@ -517,7 +517,7 @@ function initHeroTeaser(container) {
     }
     screenCtx.restore();
 
-    const currentStage = t < SETUP_FADE_START || t >= OUTRO_END ? 3 : t < 3.93 ? 0 : t < 5.87 ? 1 : t < OUTRO_START ? 2 : 3;
+    const currentStage = t < SETUP_FADE_START || t >= OUTRO_END ? 3 : t < 4.33 ? 0 : t < 6.27 ? 1 : t < OUTRO_START ? 2 : 3;
     const stageColor = currentStage === 0 ? "#8ed7dd" : currentStage === 1 ? "#d8ad3f" : currentStage === 2 ? "#9bb873" : "#cfd8d3";
     const screenContentAlpha = easeInOut((t - SETUP_FADE_START) / 0.36) * (1 - easeInOut((t - OUTRO_END) / 0.48));
 
@@ -577,12 +577,12 @@ function initHeroTeaser(container) {
   }
 
   function renderFrame() {
-    const elapsed = reducedMotion ? 7.35 : clock.getElapsedTime();
+    const elapsed = reducedMotion ? 8.35 : clock.getElapsedTime();
     const stage = drawScreen(elapsed);
     drawThoughtBubble(elapsed);
 
     const cycleTime = elapsed % LOOP_DURATION;
-    const turnTowardViewer = easeInOut((cycleTime - 8.11) / 0.44);
+    const turnTowardViewer = easeInOut((cycleTime - 8.51) / 0.44);
     const turnBackToMonitor = easeInOut((cycleTime - OUTRO_END) / 0.9);
     const introGlance = elapsed < INTRO_LOOK_BACK_END
       ? 1 - easeInOut((elapsed - INTRO_LOOK_BACK_START) / (INTRO_LOOK_BACK_END - INTRO_LOOK_BACK_START))
