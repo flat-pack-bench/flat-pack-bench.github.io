@@ -145,6 +145,11 @@ video {
   z-index: 2;
 }
 
+.hero-copy > :not(.hero-teaser) {
+  position: relative;
+  z-index: 2;
+}
+
 .hero-teaser {
   position: absolute;
   top: 60%;
@@ -2011,7 +2016,14 @@ td.num {
   }
 
   .hero-teaser {
-    display: none;
+    position: relative;
+    top: auto;
+    right: auto;
+    width: min(100%, 560px);
+    height: clamp(300px, 62vw, 500px);
+    margin: clamp(14px, 3vw, 22px) auto clamp(18px, 4vw, 28px);
+    transform: none;
+    z-index: 1;
   }
 }
 
