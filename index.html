@@ -8,23 +8,14 @@
       content="Flat-Pack Bench evaluates spatio-temporal video understanding in large vision-language models through furniture assembly."
     >
     <title>Flat-Pack Bench</title>
-    <link rel="stylesheet" href="assets/css/styles.css?v=20260428-6">
+    <link rel="icon" href="/favicon.ico" sizes="any">
+    <link rel="icon" type="image/png" href="/assets/images/favicon.png">
+    <link rel="stylesheet" href="assets/css/styles.css?v=20260528-11">
   </head>
-  <body>
-    <header class="hero" id="top">
-      <nav class="topbar" aria-label="Primary navigation">
-        <a class="mark" href="#top">Flat-Pack Bench</a>
-        <div class="topbar-links">
-          <a href="#overview">Overview</a>
-          <a href="#benchmark">Benchmark</a>
-          <a href="#dataset">Dataset Viewer</a>
-          <a href="#results">Results</a>
-          <a href="#citation">Citation</a>
-        </div>
-      </nav>
-
-      <div class="hero-grid">
-        <div class="hero-copy">
+  <body class="homepage-fpb">
+    <header class="hero fpb-hero" id="top">
+      <div class="hero-grid fpb-hero-grid">
+        <div class="hero-copy fpb-hero-copy">
           <p class="eyebrow">Furniture assembly as a spatio-temporal stress test</p>
           <h1 class="paper-title" aria-label="Flat-Pack Bench">
             <span class="sc-cap">F</span><span class="sc-small">LAT</span><span class="sc-punct">-</span><span class="sc-cap">P</span><span class="sc-small">ACK</span><span class="sc-cap sc-word">B</span><span class="sc-small">ENCH</span>
@@ -33,34 +24,36 @@
             Evaluating Spatio-Temporal Understanding in Large Vision-Language Models
             through Furniture Assembly
           </p>
-          <p class="authors">
-            <a class="author-affiliation affiliation-cornell" href="https://justachetan.github.io/">Aditya Chetan</a>,
-            <a class="author-affiliation affiliation-cornell" href="https://www.linkedin.com/in/ericcai32/">Eric Cai</a>,
-            <a class="author-link" href="https://peey.github.io/">Peeyush Kushwaha</a>,
-            <a class="author-affiliation affiliation-cornell" href="https://bharathrajn.com/">Bharath Raj Nagoor Kani</a>,
-            <a class="author-affiliation affiliation-mbzuai" href="https://utkarshmall.com/">Utkarsh Mall</a>,
-            <a class="author-affiliation affiliation-ucb" href="https://qianqianwang68.github.io/">Qianqian Wang</a>,
-            <br class="author-break">
-            <a class="author-affiliation affiliation-cornell" href="https://www.cs.cornell.edu/~snavely/">Noah Snavely</a>,
-            <a class="author-affiliation affiliation-cornell" href="https://www.cs.cornell.edu/~bharathh/">Bharath Hariharan</a>
-          </p>
-          <p class="paper-status">
-            <a href="https://cvpr.thecvf.com/">✨ CVPR 2026 ✨</a>
-          </p>
-          <div class="affiliation-logos" aria-label="Author affiliations">
-            <a class="affiliation-cornell" href="https://www.cornell.edu/" aria-label="Cornell University">
-              <img src="assets/logos/cornell.svg" alt="Cornell University">
-            </a>
-            <a class="affiliation-mbzuai" href="https://mbzuai.ac.ae/" aria-label="Mohamed bin Zayed University of Artificial Intelligence">
-              <img src="assets/logos/mbzuai.png" alt="MBZUAI">
-            </a>
-            <a class="affiliation-ucb" href="https://www.berkeley.edu/" aria-label="University of California, Berkeley">
-              <img src="assets/logos/berkeley.svg" alt="UC Berkeley">
-            </a>
-          </div>
-          <div class="hero-teaser" aria-label="Animated robot watching Flat-Pack Bench assembly teaser">
-            <div class="hero-teaser-scene" id="hero-teaser-scene"></div>
-          </div>
+          <ul class="fpb-summary-list" aria-label="Key takeaways">
+            <li>
+              <span class="takeaway-emoji" aria-hidden="true">🎥🪑</span>
+              <span>
+                <strong>Video Question-Answering Benchmark:</strong>
+                Based on furniture assembly, with manually curated questions that evaluate the spatio-temporal reasoning abilities of LVLMs.
+              </span>
+            </li>
+            <li>
+              <span class="takeaway-emoji" aria-hidden="true">📊🧪</span>
+              <span>
+                <strong>Evaluation:</strong>
+                We evaluate a range of open, closed, and specialized LVLMs on our benchmark, and find that state-of-the-art LVLMs lag far behind human performance.
+              </span>
+            </li>
+            <li>
+              <span class="takeaway-emoji" aria-hidden="true">🧠🔎</span>
+              <span>
+                <strong>Self-Explanations:</strong>
+                Probing the thought traces of the model reveals that tracking objects through occlusions and pose changes is a key bottleneck of current LVLMs.
+              </span>
+            </li>
+            <li>
+              <span class="takeaway-emoji" aria-hidden="true">🧰🧩</span>
+              <span>
+                <strong>Task Decomposition:</strong>
+                Breaking questions into tool-driven subtasks exposes the same bottlenecks: today's trackers and contact-reasoning tools still fail on assembly videos.
+              </span>
+            </li>
+          </ul>
           <div class="resource-row" aria-label="Project resources">
             <a class="button" href="https://arxiv.org/abs/2605.21625">
               <img
@@ -79,7 +72,7 @@
               <svg class="button-icon brand-icon" viewBox="0 0 24 24" aria-hidden="true">
                 <path d="M12 2.25a9.75 9.75 0 0 0-3.08 19c.49.09.67-.21.67-.47v-1.71c-2.73.59-3.31-1.18-3.31-1.18-.45-1.12-1.09-1.42-1.09-1.42-.89-.61.07-.6.07-.6.98.07 1.5 1.01 1.5 1.01.88 1.5 2.3 1.07 2.86.82.09-.63.34-1.07.62-1.31-2.18-.25-4.47-1.09-4.47-4.86 0-1.07.38-1.95 1.01-2.64-.1-.25-.44-1.25.1-2.6 0 0 .83-.26 2.7 1.01A9.31 9.31 0 0 1 12 6.96c.83 0 1.67.11 2.46.34 1.87-1.27 2.69-1.01 2.69-1.01.54 1.35.2 2.35.1 2.6.63.69 1.01 1.57 1.01 2.64 0 3.78-2.3 4.61-4.49 4.85.35.3.66.9.66 1.82v2.58c0 .26.18.57.68.47A9.75 9.75 0 0 0 12 2.25z"></path>
               </svg>
-              <span>Code <span class="coming-soon">(Coming soon)</span></span>
+              <span>Code</span>
             </a>
             <a class="button" href="https://huggingface.co/collections/justachetan/flat-pack-bench">
               <i class="fa-solid fa-database button-icon" aria-hidden="true"></i>
@@ -94,8 +87,63 @@
             </a>
           </div>
         </div>
+        <div class="fpb-visual" aria-label="Animated Flat-Pack Bench teaser">
+          <div class="hero-teaser" aria-label="Animated robot watching Flat-Pack Bench assembly teaser">
+            <div class="hero-teaser-scene" id="hero-teaser-scene"></div>
+          </div>
+        </div>
       </div>
     </header>
+
+    <section class="fpb-byline" aria-label="Authors and affiliations">
+      <div class="fpb-byline-inner">
+        <div class="fpb-byline-block fpb-byline-authors">
+          <p class="small-label">Authors</p>
+          <div class="authors fpb-reference-authors">
+            <a class="author-affiliation affiliation-cornell" href="https://justachetan.github.io/">Aditya Chetan<sup>†</sup></a>
+            <a class="author-affiliation affiliation-cornell" href="https://www.linkedin.com/in/ericcai32/">Eric Cai<sup>†</sup></a><br>
+            <a class="author-link" href="https://peey.github.io/">Peeyush Kushwaha<sup>‖</sup></a>
+            <a class="author-affiliation affiliation-cornell" href="https://bharathrajn.com/">Bharath Raj Nagoor Kani<sup>†</sup></a><br>
+            <a class="author-affiliation affiliation-mbzuai" href="https://utkarshmall.com/">Utkarsh Mall<sup>§</sup></a>
+            <a class="author-affiliation affiliation-ucb" href="https://qianqianwang68.github.io/">Qianqian Wang<sup>¶</sup></a><br>
+            <a class="author-affiliation affiliation-cornell" href="https://www.cs.cornell.edu/~snavely/">Noah Snavely<sup>†,‡</sup></a>
+            <a class="author-affiliation affiliation-cornell" href="https://www.cs.cornell.edu/~bharathh/">Bharath Hariharan<sup>†</sup></a>
+          </div>
+        </div>
+        <div class="fpb-byline-block">
+          <p class="small-label">Affiliations</p>
+          <div class="fpb-affiliation-list" aria-label="Author affiliations">
+            <p class="affiliation-cornell"><sup>†</sup><a href="https://www.cornell.edu/">Cornell University</a></p>
+            <p class="affiliation-cornell"><sup>‡</sup><a href="https://tech.cornell.edu/">Cornell Tech</a></p>
+            <p class="affiliation-mbzuai"><sup>§</sup><a href="https://mbzuai.ac.ae/">MBZUAI</a></p>
+            <p class="affiliation-ucb"><sup>¶</sup><a href="https://www.berkeley.edu/">UC Berkeley</a></p>
+            <p><sup>‖</sup>Independent researcher</p>
+          </div>
+        </div>
+        <div class="fpb-byline-block">
+          <p class="small-label">Venue</p>
+          <a class="fpb-venue-logo" href="https://cvpr.thecvf.com/" aria-label="CVPR 2026">
+            <img src="assets/logos/cvpr-2026.png" alt="CVPR 2026">
+          </a>
+        </div>
+      </div>
+    </section>
+
+    <section class="fpb-game-section" aria-labelledby="fpb-game-title">
+      <div class="fpb-game-inner">
+        <div class="fpb-game-heading">
+          <p class="eyebrow">Challenge!</p>
+          <h2 id="fpb-game-title">Can you beat Large Vision-Language Models<br>at Spatio-Temporal Reasoning?</h2>
+          <p>
+            Make your pick, reveal the models' answers, and see if your reasoning wins!
+          </p>
+        </div>
+        <div class="fpb-game" id="fpb-game">
+          <div class="fpb-game-tabs" id="fpb-game-tabs" role="tablist" aria-label="Curated Flat-Pack Bench examples" aria-orientation="horizontal"></div>
+          <article class="fpb-game-detail" id="fpb-game-detail" aria-live="polite"></article>
+        </div>
+      </div>
+    </section>
 
     <main class="page">
       <aside class="toc" aria-label="Table of contents">
@@ -104,21 +152,38 @@
         <a href="#benchmark">Benchmark</a>
         <a href="#dataset">Dataset Viewer</a>
         <a href="#evaluation">Evaluation</a>
-        <a href="#results">Results</a>
-        <a href="#citation">Citation</a>
+        <a href="#results">Key Results</a>
+        <a href="#conclusion">Conclusion</a>
       </aside>
 
       <div class="content">
         <section class="section" id="overview">
           <div class="section-heading">
             <p class="eyebrow">Overview</p>
-            <h2>Assembly videos expose gaps in visual temporal reasoning.</h2>
+            <h2>Assembly videos expose gaps in spatio-temporal reasoning abilities of Large Vision-Language Models</h2>
           </div>
           <p class="lead">
-            Flat-Pack Bench is a multiple-choice benchmark for fine-grained
-            spatio-temporal understanding. Each question asks a model to reason
-            about parts, contact events, assembly order, final connectivity, or
-            object identity across time in real furniture assembly videos.
+            Many applications, such as furniture assembly and cooking, require
+            step-by-step fine-grained spatio-temporal understanding of videos,
+            which is not sufficiently evaluated in current video understanding
+            benchmarks for Large Vision-Language Models (LVLMs). To fill this gap, we propose a novel multimodal
+            question-answering benchmark, <span class="paper-title paper-title-inline" aria-label="Flat-Pack Bench"><span class="sc-cap">F</span><span class="sc-small">LAT</span><span class="sc-punct">-</span><span class="sc-cap">P</span><span class="sc-small">ACK</span><span class="sc-cap sc-word">B</span><span class="sc-small">ENCH</span></span>, based on
+            furniture assembly videos. We frame fine-grained questions for
+            nuanced tasks, including temporal ordering of assembly actions,
+            temporal localization of assembly states, understanding part mating,
+            and tracking, as multiple-choice questions paired with visual
+            prompts highlighting relevant parts as references for the questions.
+          </p>
+          <p class="lead">
+            Our experiments show that even state-of-the-art LVLMs struggle:
+            OpenAI's latest GPT-5 model achieves about <strong>38%</strong> accuracy, trailing
+            far behind human performance of 94.18%. We look deeper into model
+            performance and show how models struggle with spatio-temporal
+            reasoning tasks, such as tracking and contact detection, required
+            for the tasks in our benchmark. Our benchmark suggests that,
+            despite rapid progress, current LVLMs (and computer vision systems
+            in general) have limited capability to understand the temporal
+            evolution of complex scenes.
           </p>
         </section>
 
@@ -154,33 +219,40 @@
               <p>Match labeled parts across two states, requiring object identity through occlusion and motion.</p>
             </article>
           </div>
-          <div class="split single">
-            <div>
-              <h3>Prompt construction</h3>
-              <p>
-                Questions combine a video with visual prompts that label the relevant parts.
-                Non-tracking questions use one annotated image, while tracking questions use
-                an Image A to Image B correspondence prompt.
-              </p>
-            </div>
+          <div class="benchmark-construction">
+            <p class="lead">
+              <span class="paper-title paper-title-inline" aria-label="Flat-Pack Bench"><span class="sc-cap">F</span><span class="sc-small">LAT</span><span class="sc-punct">-</span><span class="sc-cap">P</span><span class="sc-small">ACK</span><span class="sc-cap sc-word">B</span><span class="sc-small">ENCH</span></span> starts from
+              <a href="https://yunongliu1.github.io/ikea-video-manual/">IKEA-Manuals-At-Work (IMaW) [Liu et al., NeurIPS D&amp;B 2024]</a>,
+              an in-the-wild collection of IKEA furniture assembly videos with 3D part models,
+              key frames, segmentation masks, poses, and sub-assembly annotations. Because IMaW
+              segmentations cover only parts being connected in selected key frames and are often
+              provided at sub-assembly rather than individual-part granularity, we extend the
+              annotations with fine-grained part segmentations on <b>343 frames</b> across
+              <b>50 videos</b> and add part-level connection events specifying which parts
+              connect, when, and to what.
+            </p>
+            <p class="lead">
+              The benchmark evaluates both trimmed videos, where text-only instruction-card
+              segments are removed from raw videos, and keyframe videos, which retain only salient
+              assembly states. Visual prompts refer unambiguously to furniture parts: text
+              descriptions can be ambiguous in symmetric assemblies and can encourage models to
+              rely on common-sense furniture priors rather than the provided visual input. The
+              resulting questions span mating, tracking, temporal ordering, and temporal
+              localization. Although annotations and templates allow automatic generation, final
+              questions are manually curated to avoid shortcuts from static prompt cues,
+              already-connected parts, or weak distractors.
+            </p>
           </div>
         </section>
 
         <section class="section" id="dataset">
           <div class="section-heading">
             <p class="eyebrow">Dataset Viewer</p>
-            <h2>Switch between curated examples and the full benchmark browser.</h2>
+            <h2>Browse the full benchmark with model responses.</h2>
           </div>
 
           <div class="viewer-shell" id="dataset-viewer">
             <div class="viewer-toolbar">
-              <div>
-                <p class="small-label">View</p>
-                <div class="segmented view-switch" id="dataset-viewer-mode">
-                  <button type="button" data-viewer-mode="curated" class="active">Curated samples</button>
-                  <button type="button" data-viewer-mode="full">Full dataset</button>
-                </div>
-              </div>
               <div>
                 <p class="small-label">Video</p>
                 <div class="segmented" id="dataset-video-mode">
@@ -190,18 +262,14 @@
               </div>
             </div>
 
-            <div class="dataset-controls" id="dataset-filters" role="search" hidden>
+            <div class="dataset-controls" id="dataset-filters" role="search">
               <label>
                 Search
-                <input id="dataset-search" type="search" placeholder="question, video, furniture, template">
+                <input id="dataset-search" type="search" placeholder="question, video, furniture">
               </label>
               <label>
                 Category
                 <select id="category-filter"></select>
-              </label>
-              <label>
-                Template
-                <select id="template-filter"></select>
               </label>
               <label>
                 Furniture
@@ -209,19 +277,7 @@
               </label>
             </div>
 
-            <div class="dataset-layout" id="curated-sample-view">
-              <div class="question-list-panel">
-                <div class="list-header">
-                  <span id="sample-count">0 curated samples</span>
-                  <span class="keyboard-hint">Use arrow keys</span>
-                </div>
-                <div class="question-list" id="example-tabs"></div>
-                <div class="category-legend" id="sample-legend" aria-label="Question family legend"></div>
-              </div>
-              <article class="dataset-detail" id="curated-detail"></article>
-            </div>
-
-            <div class="dataset-layout" id="full-dataset-view" hidden>
+            <div class="dataset-layout" id="full-dataset-view">
               <div class="question-list-panel">
                 <div class="list-header">
                   <span id="dataset-count">0 questions</span>
@@ -238,30 +294,36 @@
         <section class="section" id="evaluation">
           <div class="section-heading">
             <p class="eyebrow">Evaluation</p>
-            <h2>Models are scored as multiple-choice video question answerers.</h2>
+            <h2>Models are evaluated on multiple-choice video question answering.</h2>
           </div>
-          <div class="split">
-            <div>
-              <h3>Inputs</h3>
-              <p>
-                The evaluation compares keyframe videos, trimmed videos, and visual prompt
-                construction variants such as separate images, collages, and concatenated
-                prompt media.
-              </p>
-            </div>
-            <div>
-              <h3>Outputs</h3>
-              <p>
-                Models answer with an option label. We report micro-average accuracy and
-                per-category accuracy for TORD, TLOC, TRACK, and MATE.
-              </p>
-            </div>
+          <div class="evaluation-summary">
+            <p class="lead">
+              <b>Prompt construction.</b> Each evaluation prompt consists of an assembly video,
+              one or two visual prompts, the multiple-choice question, and fixed task instructions
+              describing the input format. We evaluate both keyframe videos, which show salient
+              assembly states, and trimmed videos, which remove text-only instruction-card segments
+              from the raw videos. Visual prompts are supplied in three settings: Mixed-Media,
+              where prompt images are provided separately from the video; Collage, where prompt
+              images are fixed alongside every video frame; and Concat, where prompt images are
+              prepended as the first one or two video frames. The expandable viewer below shows
+              examples of these prompt types from the supplementary material.
+            </p>
+            <details class="evaluation-prompt-viewer" id="visual-prompts">
+              <summary>Visual Prompt Construction Examples</summary>
+              <div class="prompt-type-examples" id="visual-prompt-examples"></div>
+            </details>
+            <p class="lead">
+              <b>Metric.</b> Models answer with an option label, and performance is measured using
+              exact-match multiple-choice accuracy. Results are reported as micro-average accuracy
+              across the benchmark and as per-category accuracy for temporal ordering, temporal
+              localization, tracking, and mating.
+            </p>
           </div>
         </section>
 
         <section class="section" id="results">
           <div class="section-heading">
-            <p class="eyebrow">Results</p>
+            <p class="eyebrow">Key Results</p>
             <h2>Current LVLMs remain far below human performance.</h2>
           </div>
           <div class="cards three">
@@ -282,9 +344,9 @@
             </article>
           </div>
 
-          <div class="results-panel results-collapsible" id="results-collapsible">
+          <div class="results-panel results-collapsible" id="zero-shot-results">
             <button class="results-toggle" id="results-toggle" type="button" aria-expanded="false" aria-controls="results-table-region">
-              <span>Main results table</span>
+              <span>Complete Zero-shot Results</span>
               <span data-results-toggle-label>Expand</span>
             </button>
             <div id="results-table-region" hidden>
@@ -327,14 +389,271 @@
               </div>
             </div>
           </div>
+          <div class="evaluation-summary results-summary">
+            <p class="lead">
+              Current LVLMs remain far behind humans on <span class="paper-title paper-title-inline" aria-label="Flat-Pack Bench"><span class="sc-cap">F</span><span class="sc-small">LAT</span><span class="sc-punct">-</span><span class="sc-cap">P</span><span class="sc-small">ACK</span><span class="sc-cap sc-word">B</span><span class="sc-small">ENCH</span></span>: human
+              evaluators reach 94.18% micro-average accuracy, while all model
+              families stay below 42%.
+            </p>
+            <p class="lead">
+              <b>Proprietary models.</b> GPT-5 is the strongest proprietary model
+              at 37.71% micro-average accuracy, followed by Gemini 2.5 Pro at
+              33.72% and Gemini 3.1 Pro at 32.89%. These scores are only
+              modestly above the frequency-chance baseline of 26.74%, showing
+              that even leading closed models struggle with the benchmark's
+              fine-grained spatio-temporal reasoning.
+            </p>
+            <p class="lead">
+              <b>Open models.</b> The strongest overall result comes from
+              InternVL3-78B, which reaches 41.03% micro-average accuracy, with
+              Qwen2.5-VL-72B close behind at 40.37%. Open models are competitive
+              with proprietary systems, but performance varies widely across
+              model families and sizes, with several models only slightly above
+              chance.
+            </p>
+            <p class="lead">
+              <b>Specialized models.</b> Despite being trained specifically for
+              fine-grained region-specific questions, PerceptionLM and VideoRefer
+              perform poorly, likely due to a mismatch between their training data,
+              which feature relatively simple videos with few fine-grained
+              interactions, and the complex, multi-part interactions in
+              <span class="paper-title paper-title-inline" aria-label="Flat-Pack Bench"><span class="sc-cap">F</span><span class="sc-small">LAT</span><span class="sc-punct">-</span><span class="sc-cap">P</span><span class="sc-small">ACK</span><span class="sc-cap sc-word">B</span><span class="sc-small">ENCH</span></span>.
+              Still, PerceptionLM-8B is competitive with much larger models (e.g.,
+              Qwen2.5-VL-32B), suggesting value in training on data rich in
+              fine-grained interactions. Temporal sensitivity also helps ArrowRL
+              beat its base checkpoint (Qwen2.5-VL-7B), especially on temporal
+              ordering (TORD).
+            </p>
+            <div class="results-conclusion-box">
+              <p class="lead">
+                Taken together, these results indicate that current LVLMs -
+                proprietary, open, and specialized - remain far from achieving
+                the strong, reliable spatio-temporal understanding skills that
+                humans demonstrate on <span class="paper-title paper-title-inline" aria-label="Flat-Pack Bench"><span class="sc-cap">F</span><span class="sc-small">LAT</span><span class="sc-punct">-</span><span class="sc-cap">P</span><span class="sc-small">ACK</span><span class="sc-cap sc-word">B</span><span class="sc-small">ENCH</span></span>.
+              </p>
+            </div>
+          </div>
+          <div class="section-heading results-subsection-heading">
+            <h2>Probing Errors through Self-Explanations</h2>
+          </div>
+          <div class="self-explanation-section">
+            <div class="evaluation-summary self-explanation-summary">
+              <p class="lead">
+                We looked at self-explanations to understand why LVLMs were
+                failing on fine-grained spatio-temporal questions. In preliminary
+                experiments, the rationales generated by Qwen2.5-VL-72B mostly
+                paraphrased its selected option, which made them less useful for
+                diagnosing the underlying failure mode.
+              </p>
+              <p class="lead">
+                Gemini 2.5 Pro's
+                <a href="https://ai.google.dev/gemini-api/docs/thinking#thought-summaries">thought summaries</a>
+                were substantially richer: they often included timestamps,
+                explicit connection events, and intermediate tracking decisions.
+                We therefore used these summaries to pinpoint where the model's
+                reasoning diverged from the visual evidence.
+              </p>
+              <p class="lead">
+                For the quantitative error analysis, we sampled 200 questions
+                that Gemini 2.5 Pro answered incorrectly, balanced across the four
+                task categories. Human annotators wrote short diagnoses from the
+                thought summaries; we then collated the question text, model
+                thoughts, and annotations, asked Gemini 2.5 Pro to identify five
+                broad error categories, and assigned each example to one or more
+                categories.
+              </p>
+            </div>
+
+            <div class="self-error-chart" aria-labelledby="self-error-chart-title">
+              <div class="self-error-chart-copy">
+                <h3 id="self-error-chart-title">Error types from thought summaries</h3>
+                <p>
+                  Percentages show each category's share among the sampled
+                  incorrect questions used for rationale analysis.
+                </p>
+              </div>
+              <figure class="error-pie-figure">
+                <div
+                  class="error-pie"
+                  data-error-pie
+                  role="img"
+                  aria-label="Object grounding 37.28 percent, spatio-temporal reasoning 32.45 percent, temporal reasoning 17.98 percent, physical interaction 7.89 percent, language and logic 4.38 percent."
+                ></div>
+              </figure>
+              <ul class="error-legend" aria-label="Error type legend">
+                <li class="error-object" data-error-key="object">
+                  <span class="error-swatch"></span>
+                  <div>
+                    <strong>Object Grounding</strong>
+                    <p>Failure to correctly identify an object across the image and video.</p>
+                  </div>
+                  <em>37.28%</em>
+                </li>
+                <li class="error-spatiotemporal" data-error-key="spatiotemporal">
+                  <span class="error-swatch"></span>
+                  <div>
+                    <strong>Spatio-Temporal Reasoning</strong>
+                    <p>Error tracking an object's identity through camera motion, object rotation, or scene cuts.</p>
+                  </div>
+                  <em>32.45%</em>
+                </li>
+                <li class="error-temporal" data-error-key="temporal">
+                  <span class="error-swatch"></span>
+                  <div>
+                    <strong>Temporal Reasoning</strong>
+                    <p>The chronological sequence of object interactions is wrong.</p>
+                  </div>
+                  <em>17.98%</em>
+                </li>
+                <li class="error-physical" data-error-key="physical">
+                  <span class="error-swatch"></span>
+                  <div>
+                    <strong>Physical Interaction</strong>
+                    <p>The model misjudges contact, support, or other physical interactions between parts.</p>
+                  </div>
+                  <em>7.89%</em>
+                </li>
+                <li class="error-language" data-error-key="language">
+                  <span class="error-swatch"></span>
+                  <div>
+                    <strong>Language &amp; Logic</strong>
+                    <p>Instruction misinterpretation or faulty conclusions from correct observations.</p>
+                  </div>
+                  <em>4.38%</em>
+                </li>
+              </ul>
+            </div>
+
+            <details class="evaluation-prompt-viewer self-explanation-viewer" id="self-explanation-viewer">
+              <summary>Qualitative self-explanation examples</summary>
+              <section class="self-explanation-howto" aria-labelledby="self-explanation-howto-title">
+                <h3 id="self-explanation-howto-title">What is shown here?</h3>
+                <p>
+                  We show the thought summaries and CoT explanations generated by
+                  Gemini 2.5 Pro and Qwen2.5-VL-72B respectively. We conducted
+                  this experiment on the Mixed-Media visual prompts using
+                  key-frame videos. Pick a question ID from the examples below to
+                  view the question; scroll below to select the model, and look at
+                  their respective answers and explanations.
+                </p>
+                <p>
+                  For Gemini 2.5 Pro, in addition to the thought summaries, we
+                  also show manually-annotated Performance Indicators (red for
+                  errors, green for accurate statements) based on the error
+                  categories for rationales discussed earlier. Green means that
+                  the model's rationale displayed correct understanding in that
+                  aspect, while red indicates poor reasoning skills in that
+                  category.
+                </p>
+                <p>
+                  We also provide a manually annotated Diagnostic Analysis for each
+                  explanation, highlighting what the explanation got right or
+                  wrong and what that suggests about the LVLMs spatio-temporal
+                  reasoning abilties.
+                </p>
+              </section>
+              <div class="self-explanation-examples" id="self-explanation-examples"></div>
+            </details>
+
+            <div class="results-conclusion-box self-explanation-takeaway">
+              <p class="lead">
+                Object grounding and spatio-temporal reasoning are the major
+                error sources, suggesting that the model struggles to understand
+                the fine-grained regional references from the visual prompt and
+                tracking the references through the video.
+              </p>
+            </div>
+          </div>
+          <div class="section-heading results-subsection-heading">
+            <h2>Does Task Decomposition Help?</h2>
+          </div>
+          <div class="task-decomposition-section">
+            <div class="evaluation-summary task-decomposition-summary">
+              <p class="lead">
+                Many questions in <span class="paper-title paper-title-inline" aria-label="Flat-Pack Bench"><span class="sc-cap">F</span><span class="sc-small">LAT</span><span class="sc-punct">-</span><span class="sc-cap">P</span><span class="sc-small">ACK</span><span class="sc-cap sc-word">B</span><span class="sc-small">ENCH</span></span>
+                can be decomposed into two lower-level skills: tracking parts
+                through the assembly video and reasoning about when those parts
+                make contact. We therefore evaluated whether a tool-using
+                decomposition could solve the benchmark by isolating those
+                subproblems.
+              </p>
+              <p class="lead">
+                The resulting TVA pipeline uses specialized tools for each
+                stage, including a <a href="https://ai.meta.com/research/sam2/">SAM 2</a>-based
+                tracker for object propagation and a VLM-query function for
+                contact reasoning. The agent writes and executes code that calls
+                these tools, then attempts to map the tool outputs back to the
+                multiple-choice options.
+              </p>
+              <p class="lead">
+                Overall, TVA performs poorly, reaching only 11.79% accuracy, and
+                mostly abstains with a 62.29% abstention rate because it cannot
+                find an answer within the provided option set. Further analysis
+                shows that the issue is not just final answer selection: the
+                tools themselves are often inaccurate on furniture assembly videos. The
+                <a href="#task-decomposition-viewer">qualitative examples</a>
+                below show how those tracking and contact-reasoning failures
+                appear during execution.
+              </p>
+            </div>
+
+            <details class="evaluation-prompt-viewer task-decomposition-viewer" id="task-decomposition-viewer">
+              <summary>Qualitative TVA examples</summary>
+              <section class="self-explanation-howto task-decomposition-howto" aria-labelledby="task-decomposition-howto-title">
+                <h3 id="task-decomposition-howto-title">What is shown here?</h3>
+                <p>
+                  We show some qualitative examples of TVA in action. Each
+                  example includes the benchmark question, the
+                  corresponding visual prompt, and a walkthrough video showing
+                  the generated tool-execution trace used by the agent.
+                </p>
+              </section>
+              <div class="tva-examples" id="tva-examples"></div>
+            </details>
+
+            <div class="results-conclusion-box task-decomposition-takeaway">
+              <p class="lead">
+                Beyond the benchmark questions, even simpler tasks (like
+                tracking and contact-reasoning) on the furniture assembly domain
+                are a challenge for the current state-of-the-art.
+              </p>
+            </div>
+          </div>
         </section>
 
-        <section class="section" id="citation">
+        <section class="section" id="conclusion">
           <div class="section-heading">
-            <p class="eyebrow">Citation</p>
-            <h2>BibTeX</h2>
+            <p class="eyebrow">Conclusion</p>
+            <h2><span class="paper-title paper-title-inline" aria-label="Flat-Pack Bench"><span class="sc-cap">F</span><span class="sc-small">LAT</span><span class="sc-punct">-</span><span class="sc-cap">P</span><span class="sc-small">ACK</span><span class="sc-cap sc-word">B</span><span class="sc-small">ENCH</span></span> surfaces the limits of spatio-temporal reasoning in current LVLMs.</h2>
           </div>
-          <pre class="bibtex"><code>@InProceedings{Chetan_2026_CVPR,
+          <div class="conclusion-summary">
+            <p class="lead">
+              Our analysis reveals key bottlenecks of LVLMs in finegrained video
+              understanding particularly spatio-temporal reasoning (e.g. keeping
+              track of parts through occlusions, scene cuts, etc.) and
+              region-specific grounding. We also study whether an agentic
+              decomposition of the task can help, but find that current vision
+              tools share similar limitations: even specialized tracking models
+              struggle, and LVLMs fail on simpler subproblems such as contact
+              reasoning.
+            </p>
+          </div>
+        </section>
+      </div>
+    </main>
+
+    <footer class="citation-footer" aria-labelledby="citation-title">
+      <section class="section citation-section" id="citation">
+        <div class="section-heading">
+          <p class="eyebrow">Citation</p>
+          <h2 id="citation-title">BibTeX</h2>
+        </div>
+        <div class="bibtex-shell">
+          <button class="copy-bibtex" type="button" data-copy-bibtex data-copy-label="Copy" data-copied-label="Copied" aria-label="Copy BibTeX to clipboard">
+            <i class="fa-regular fa-copy" aria-hidden="true"></i>
+            <span aria-live="polite">Copy</span>
+          </button>
+          <pre class="bibtex" id="bibtex-code"><code>@InProceedings{Chetan_2026_CVPR,
     author    = {Chetan, Aditya and Cai, Eric and Kushwaha, Peeyush and Kani, Bharath Raj Nagoor and Mall, Utkarsh and Wang, Qianqian and Snavely, Noah and Hariharan, Bharath},
     title     = {Flat-Pack Bench: Evaluating Spatio-Temporal Understanding in Large Vision-Language Models through Furniture Assembly},
     booktitle = {Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR)},
@@ -342,9 +661,9 @@
     year      = {2026},
     pages     = {16624-16634}
 }</code></pre>
-        </section>
-      </div>
-    </main>
+        </div>
+      </section>
+    </footer>
 
     <div class="image-overlay" id="image-overlay" hidden>
       <button class="image-overlay-close" type="button" aria-label="Close expanded prompt image">Close</button>
@@ -354,7 +673,8 @@
       </figure>
     </div>
 
-    <script type="module" src="assets/js/hero-teaser.js?v=20260518-1"></script>
-    <script type="module" src="assets/js/app.js?v=20260428-2"></script>
+    <script type="module" src="assets/js/hero-teaser.js?v=20260528-1"></script>
+    <script src="assets/supplementary/sectiond_1/overrides/overrides.js?v=20260528-1"></script>
+    <script type="module" src="assets/js/app.js?v=20260528-16"></script>
   </body>
 </html>

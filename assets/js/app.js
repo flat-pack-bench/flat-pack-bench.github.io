@@ -33,6 +33,15 @@ const RESULT_FILTER_LABELS = {
   prompt: "Prompt",
   video: "Video",
 };
+const RESULTS_TABLE_HASHES = new Set(["#zero-shot-results", "#results-table-region", "#results-table"]);
+const TASK_DECOMPOSITION_HASHES = new Set(["#task-decomposition-viewer", "#task-decomposition"]);
+const ERROR_PIE_SLICES = [
+  { key: "object", start: 0, end: 37.28 },
+  { key: "spatiotemporal", start: 37.28, end: 69.73 },
+  { key: "temporal", start: 69.73, end: 87.71 },
+  { key: "physical", start: 87.71, end: 95.6 },
+  { key: "language", start: 95.6, end: 100 },
+];
 
 const state = {
   questions: [],
@@ -46,11 +55,14 @@ const state = {
   results: [],
   viewerMode: "curated",
   exampleIndex: 0,
-  vsiGameIndex: 0,
-  vsiGameSelections: {},
-  vsiGameRevealed: false,
+  fpbGameIndex: 0,
+  fpbGameSelections: {},
+  fpbGameRevealed: false,
   visualPromptIndex: 0,
   visualPromptFormat: "sep",
+  selfExplanationIndex: 0,
+  selfExplanationModel: "Gemini 2.5 Pro",
+  tvaExampleIndex: 0,
   datasetVideoMode: "keyframe",
   currentQid: "",
   filteredQuestions: [],
@@ -64,6 +76,8 @@ const $$ = (selector, root = document) => Array.from(root.querySelectorAll(selec
 
 setupTableOfContents();
 setupAffiliationHover();
+setupBibtexCopy();
+setupErrorPieHover();
 
 init().catch((error) => {
   console.error(error);
@@ -111,11 +125,14 @@ async function init() {
   state.showGroundTruthAndResponses = readRevealPreference();
 
   renderBenchmarkStats();
-  setupVsiGame();
+  setupFpbGame();
   setupDatasetViewer();
   setupResultsTable();
   renderSupplementaryExplorers();
+  setupDatasetHashDeepLink();
   setupVisualPromptHashDeepLink();
+  setupSelfExplanationHashDeepLink();
+  setupTaskDecompositionHashDeepLink();
   setupGlobalEvents();
   setupTrackingPromptResize();
   syncRevealControls();
@@ -136,7 +153,7 @@ async function loadJsonOptional(path, fallback) {
 }
 
 function setupAffiliationHover() {
-  const hoverRegions = $$(".hero-copy, .vsi-byline").filter(
+  const hoverRegions = $$(".hero-copy, .fpb-byline").filter(
     (region) => $(".authors", region) && $(".affiliation-logos", region),
   );
   if (hoverRegions.length === 0) return;
@@ -222,12 +239,12 @@ function renderCategoryLegend(selector) {
     .join("");
 }
 
-function setupVsiGame() {
-  const game = $("#vsi-game");
+function setupFpbGame() {
+  const game = $("#fpb-game");
   if (!game) return;
 
-  const tabs = $("#vsi-game-tabs", game);
-  const detail = $("#vsi-game-detail", game);
+  const tabs = $("#fpb-game-tabs", game);
+  const detail = $("#fpb-game-detail", game);
   if (!tabs || !detail) return;
 
   if (state.examples.length === 0) {
@@ -235,77 +252,77 @@ function setupVsiGame() {
     return;
   }
 
-  renderVsiGameTabs();
-  renderVsiGameDetail();
+  renderFpbGameTabs();
+  renderFpbGameDetail();
 
   tabs.addEventListener("click", (event) => {
-    const button = event.target.closest("[data-vsi-game-index]");
+    const button = event.target.closest("[data-fpb-game-index]");
     if (!button) return;
-    selectVsiGameIndex(Number(button.dataset.vsiGameIndex));
+    selectFpbGameIndex(Number(button.dataset.fpbGameIndex));
   });
 
   tabs.addEventListener("keydown", (event) => {
-    handleVsiGameNavigationKey(event, { focusTab: true });
+    handleFpbGameNavigationKey(event, { focusTab: true });
   });
 
   detail.addEventListener("click", (event) => {
-    const option = event.target.closest("[data-vsi-game-option]");
+    const option = event.target.closest("[data-fpb-game-option]");
     if (option) {
-      const entry = state.examples[state.vsiGameIndex];
+      const entry = state.examples[state.fpbGameIndex];
       const qid = entry?.question?.qid_flat;
       if (qid) {
-        state.vsiGameSelections[qid] = option.dataset.vsiGameOption;
-        syncVsiGameAnswerState();
+        state.fpbGameSelections[qid] = option.dataset.fpbGameOption;
+        syncFpbGameAnswerState();
       }
       return;
     }
 
-    const reveal = event.target.closest("[data-vsi-game-reveal]");
+    const reveal = event.target.closest("[data-fpb-game-reveal]");
     if (reveal) {
-      const entry = state.examples[state.vsiGameIndex];
-      const selected = entry?.question?.qid_flat ? state.vsiGameSelections[entry.question.qid_flat] : "";
+      const entry = state.examples[state.fpbGameIndex];
+      const selected = entry?.question?.qid_flat ? state.fpbGameSelections[entry.question.qid_flat] : "";
       if (!selected) return;
-      state.vsiGameRevealed = !state.vsiGameRevealed;
-      syncVsiGameAnswerState();
+      state.fpbGameRevealed = !state.fpbGameRevealed;
+      syncFpbGameAnswerState();
     }
   });
 }
 
-function selectVsiGameIndex(index, options = {}) {
+function selectFpbGameIndex(index, options = {}) {
   if (!state.examples.length) return;
 
   const count = state.examples.length;
   const nextIndex = ((index % count) + count) % count;
-  state.vsiGameIndex = nextIndex;
-  state.vsiGameRevealed = false;
-  renderVsiGameTabs();
-  renderVsiGameDetail();
+  state.fpbGameIndex = nextIndex;
+  state.fpbGameRevealed = false;
+  renderFpbGameTabs();
+  renderFpbGameDetail();
 
   if (options.focusTab) {
     requestAnimationFrame(() => {
-      const activeTab = $(`#vsi-game-tabs [data-vsi-game-index="${state.vsiGameIndex}"]`);
+      const activeTab = $(`#fpb-game-tabs [data-fpb-game-index="${state.fpbGameIndex}"]`);
       activeTab?.focus({ preventScroll: true });
     });
   }
 }
 
-function handleVsiGameNavigationKey(event, options = {}) {
-  const action = vsiGameNavigationAction(event.key);
+function handleFpbGameNavigationKey(event, options = {}) {
+  const action = fpbGameNavigationAction(event.key);
   if (action === null) return false;
 
   event.preventDefault();
   event.stopPropagation();
   if (action === "first") {
-    selectVsiGameIndex(0, options);
+    selectFpbGameIndex(0, options);
   } else if (action === "last") {
-    selectVsiGameIndex(state.examples.length - 1, options);
+    selectFpbGameIndex(state.examples.length - 1, options);
   } else {
-    selectVsiGameIndex(state.vsiGameIndex + action, options);
+    selectFpbGameIndex(state.fpbGameIndex + action, options);
   }
   return true;
 }
 
-function vsiGameNavigationAction(key) {
+function fpbGameNavigationAction(key) {
   if (["ArrowRight", "ArrowDown", "j", "J"].includes(key)) return 1;
   if (["ArrowLeft", "ArrowUp", "k", "K"].includes(key)) return -1;
   if (key === "Home") return "first";
@@ -313,8 +330,8 @@ function vsiGameNavigationAction(key) {
   return null;
 }
 
-function renderVsiGameTabs() {
-  const tabs = $("#vsi-game-tabs");
+function renderFpbGameTabs() {
+  const tabs = $("#fpb-game-tabs");
   if (!tabs) return;
 
   tabs.innerHTML = state.examples
@@ -323,7 +340,7 @@ function renderVsiGameTabs() {
       const promptSpecs = supplementaryPromptSpecs(q, "assets/supplementary/sep");
       const thumb = promptSpecs.find((spec) => spec.src) || promptSpecs[0];
       const meta = CATEGORY_META[q.question_category] || {};
-      const isActive = index === state.vsiGameIndex;
+      const isActive = index === state.fpbGameIndex;
       const label = `Example ${pad(index + 1)} / ${meta.short || categoryShort(q.question_category)}`;
       return `
         <button
@@ -331,12 +348,12 @@ function renderVsiGameTabs() {
           role="tab"
           aria-label="${escapeHtml(label)} ${escapeHtml(exampleCaption(q))}"
           aria-selected="${String(isActive)}"
-          aria-controls="vsi-game-detail"
+          aria-controls="fpb-game-detail"
           tabindex="${isActive ? "0" : "-1"}"
-          data-vsi-game-index="${index}"
-          class="vsi-game-thumb ${isActive ? "active" : ""} ${escapeHtml(meta.className || "")}"
+          data-fpb-game-index="${index}"
+          class="fpb-game-thumb ${isActive ? "active" : ""} ${escapeHtml(meta.className || "")}"
         >
-          <span class="vsi-game-thumb-image">
+          <span class="fpb-game-thumb-image">
             ${thumb?.src ? `<img src="${escapeHtml(thumb.src)}" alt="">` : ""}
           </span>
         </button>
@@ -345,11 +362,11 @@ function renderVsiGameTabs() {
     .join("");
 }
 
-function renderVsiGameDetail() {
-  const detail = $("#vsi-game-detail");
+function renderFpbGameDetail() {
+  const detail = $("#fpb-game-detail");
   if (!detail) return;
 
-  const entry = state.examples[state.vsiGameIndex];
+  const entry = state.examples[state.fpbGameIndex];
   if (!entry) {
     detail.innerHTML = `<div class="empty-state">Select a curated example to inspect it.</div>`;
     return;
@@ -359,12 +376,12 @@ function renderVsiGameDetail() {
   const meta = CATEGORY_META[q.question_category] || {};
   const promptSpecs = supplementaryPromptSpecs(q, "assets/supplementary/sep");
   const videoSrc = supplementaryVideo("sep", entry.video_id, "trimmed");
-  const selected = state.vsiGameSelections[q.qid_flat] || "";
+  const selected = state.fpbGameSelections[q.qid_flat] || "";
   const canReveal = Boolean(selected);
 
   detail.innerHTML = `
-    <div class="vsi-game-panel dataset-detail-stack">
-      ${renderVsiGameMedia(q, videoSrc, promptSpecs)}
+    <div class="fpb-game-panel dataset-detail-stack">
+      ${renderFpbGameMedia(q, videoSrc, promptSpecs)}
       <div class="question-card">
         <div class="question-card-top">
           <div class="question-meta">
@@ -372,20 +389,20 @@ function renderVsiGameDetail() {
           </div>
           <div class="reveal-control">
             <button
-              class="reveal-toggle vsi-game-reveal"
+              class="reveal-toggle fpb-game-reveal"
               type="button"
-              data-vsi-game-reveal
-              aria-expanded="${String(state.vsiGameRevealed)}"
+              data-fpb-game-reveal
+              aria-expanded="${String(state.fpbGameRevealed)}"
               ${canReveal ? "" : "disabled"}
-            >${vsiGameRevealLabel(canReveal)}</button>
+            >${fpbGameRevealLabel(canReveal)}</button>
           </div>
         </div>
-        <h3>Example ${pad(state.vsiGameIndex + 1)}</h3>
+        <h3>Example ${pad(state.fpbGameIndex + 1)}</h3>
         <p class="question-text">${escapeHtml(q.question.raw_qstr)}</p>
-        ${renderVsiGameOptions(q, selected)}
+        ${renderFpbGameOptions(q, selected)}
       </div>
-      <div class="vsi-game-answer-slot" id="vsi-game-answer-slot" ${state.vsiGameRevealed ? "" : "hidden"}>
-        ${state.vsiGameRevealed ? renderVsiGameAnswer(entry, q) : ""}
+      <div class="fpb-game-answer-slot" id="fpb-game-answer-slot" ${state.fpbGameRevealed ? "" : "hidden"}>
+        ${state.fpbGameRevealed ? renderFpbGameAnswer(entry, q) : ""}
       </div>
     </div>
   `;
@@ -393,7 +410,7 @@ function renderVsiGameDetail() {
   scheduleTrackingPromptHeights(detail);
 }
 
-function renderVsiGameMedia(q, videoSrc, promptSpecs) {
+function renderFpbGameMedia(q, videoSrc, promptSpecs) {
   const sourceTags = `<source src="${escapeHtml(videoSrc)}" type="video/mp4">`;
   const videoCell = `
     <div class="viewer-media-cell viewer-video-cell">
@@ -423,19 +440,19 @@ function renderVsiGameMedia(q, videoSrc, promptSpecs) {
   `;
 }
 
-function renderVsiGameOptions(q, selected) {
+function renderFpbGameOptions(q, selected) {
   const correct = q.question.correct_option || {};
   const options = Object.entries(q.question.options || {}).sort(([a], [b]) => Number(a) - Number(b));
   return `
-    <ul class="vsi-game-options" role="radiogroup" aria-label="Answer options">
+    <ul class="fpb-game-options" role="radiogroup" aria-label="Answer options">
       ${options
         .map(([key, option]) => {
           const label = option.label || key;
           const isSelected = selected === label;
           const isCorrect = Number(key) === Number(correct.idx) || label === correct.label;
-          const resultClass = state.vsiGameRevealed && isCorrect
+          const resultClass = state.fpbGameRevealed && isCorrect
             ? " is-correct"
-            : state.vsiGameRevealed && isSelected
+            : state.fpbGameRevealed && isSelected
               ? " is-incorrect"
               : "";
           return `
@@ -444,7 +461,7 @@ function renderVsiGameOptions(q, selected) {
                 type="button"
                 role="radio"
                 aria-checked="${String(isSelected)}"
-                data-vsi-game-option="${escapeHtml(label)}"
+                data-fpb-game-option="${escapeHtml(label)}"
                 class="${isSelected ? "is-selected" : ""}${resultClass}"
               >
                 <strong>${escapeHtml(label)}.</strong>
@@ -458,59 +475,59 @@ function renderVsiGameOptions(q, selected) {
   `;
 }
 
-function syncVsiGameAnswerState() {
-  const entry = state.examples[state.vsiGameIndex];
+function syncFpbGameAnswerState() {
+  const entry = state.examples[state.fpbGameIndex];
   const q = entry?.question;
   if (!entry || !q) return;
 
-  const selected = state.vsiGameSelections[q.qid_flat] || "";
+  const selected = state.fpbGameSelections[q.qid_flat] || "";
   const correct = q.question.correct_option || {};
 
-  $$("#vsi-game-detail [data-vsi-game-option]").forEach((button) => {
-    const label = button.dataset.vsiGameOption;
+  $$("#fpb-game-detail [data-fpb-game-option]").forEach((button) => {
+    const label = button.dataset.fpbGameOption;
     const isSelected = selected === label;
     const isCorrect = label === correct.label;
     button.setAttribute("aria-checked", String(isSelected));
     button.classList.toggle("is-selected", isSelected);
-    button.classList.toggle("is-correct", state.vsiGameRevealed && isCorrect);
-    button.classList.toggle("is-incorrect", state.vsiGameRevealed && isSelected && !isCorrect);
+    button.classList.toggle("is-correct", state.fpbGameRevealed && isCorrect);
+    button.classList.toggle("is-incorrect", state.fpbGameRevealed && isSelected && !isCorrect);
   });
 
-  const reveal = $("#vsi-game-detail [data-vsi-game-reveal]");
+  const reveal = $("#fpb-game-detail [data-fpb-game-reveal]");
   if (reveal) {
     const canReveal = Boolean(selected);
     reveal.disabled = !canReveal;
-    reveal.setAttribute("aria-expanded", String(state.vsiGameRevealed));
-    reveal.textContent = vsiGameRevealLabel(canReveal);
+    reveal.setAttribute("aria-expanded", String(state.fpbGameRevealed));
+    reveal.textContent = fpbGameRevealLabel(canReveal);
   }
 
-  const answerSlot = $("#vsi-game-answer-slot");
+  const answerSlot = $("#fpb-game-answer-slot");
   if (answerSlot) {
-    answerSlot.hidden = !state.vsiGameRevealed;
-    answerSlot.innerHTML = state.vsiGameRevealed ? renderVsiGameAnswer(entry, q) : "";
+    answerSlot.hidden = !state.fpbGameRevealed;
+    answerSlot.innerHTML = state.fpbGameRevealed ? renderFpbGameAnswer(entry, q) : "";
   }
 }
 
-function renderVsiGameAnswer(entry, q) {
+function renderFpbGameAnswer(entry, q) {
   const modelRows = state.modelResponses.responsesByQuestion?.[q.qid_flat] || [];
   const rows = modelRows.length ? modelRows : flattenResponses(entry.responses);
   const correct = q.question?.correct_option || {};
   const correctText = correct.full_text || `${correct.label}. ${correct.text || ""}`.trim();
 
   return `
-    <section class="model-response-section vsi-game-answer" aria-label="Challenge answer">
+    <section class="model-response-section fpb-game-answer" aria-label="Challenge answer">
       <h3>Ground truth and LVLM answers</h3>
-      <p class="vsi-game-ground-truth"><strong>Ground truth:</strong> ${escapeHtml(correctText)}</p>
+      <p class="fpb-game-ground-truth"><strong>Ground truth:</strong> ${escapeHtml(correctText)}</p>
       ${rows.length ? `
         <div class="response-grid">
-          ${rows.map((response) => renderVsiGameResponseCard(response, q)).join("")}
+          ${rows.map((response) => renderFpbGameResponseCard(response, q)).join("")}
         </div>
       ` : `<div class="empty-state">No model responses available for this example.</div>`}
     </section>
   `;
 }
 
-function renderVsiGameResponseCard(response, q) {
+function renderFpbGameResponseCard(response, q) {
   const correct = q.question?.correct_option?.label;
   const verdict = typeof response.correct === "boolean"
     ? (response.correct ? "correct" : "incorrect")
@@ -1008,14 +1025,80 @@ function isDatasetViewerKeyboardContext() {
   return rect.top < window.innerHeight && rect.bottom > 0;
 }
 
-function isVsiGameKeyboardContext() {
-  const game = $("#vsi-game");
+function isFpbGameKeyboardContext() {
+  const game = $("#fpb-game");
   if (!game) return false;
   if (game.contains(document.activeElement)) return true;
 
   const rect = game.getBoundingClientRect();
   const visibleHeight = Math.min(rect.bottom, window.innerHeight) - Math.max(rect.top, 0);
   return visibleHeight >= Math.min(240, rect.height * 0.25);
+}
+
+function handleSupplementaryExplorerNavigationKey(event) {
+  const action = fpbGameNavigationAction(event.key);
+  if (action === null) return false;
+
+  const target = activeSupplementaryExplorer();
+  if (!target) return false;
+
+  event.preventDefault();
+  event.stopPropagation();
+  if (target === "visual-prompts") {
+    if (action === "first") {
+      selectVisualPromptExample(0);
+    } else if (action === "last") {
+      selectVisualPromptExample(state.visualPrompts.length - 1);
+    } else {
+      moveVisualPromptExample(action);
+    }
+  } else if (target === "self-explanations") {
+    if (action === "first") {
+      selectSelfExplanationExample(0);
+    } else if (action === "last") {
+      selectSelfExplanationExample(state.selfExplanations.length - 1);
+    } else {
+      moveSelfExplanationExample(action);
+    }
+  } else if (target === "task-decomposition") {
+    if (action === "first") {
+      selectTvaExample(0);
+    } else if (action === "last") {
+      selectTvaExample(state.tvaExamples.length - 1);
+    } else {
+      moveTvaExample(action);
+    }
+  }
+  return true;
+}
+
+function activeSupplementaryExplorer() {
+  const contexts = [
+    { name: "visual-prompts", context: supplementaryDetailsKeyboardContext("#visual-prompts") },
+    { name: "self-explanations", context: supplementaryDetailsKeyboardContext("#self-explanation-viewer") },
+    { name: "task-decomposition", context: supplementaryDetailsKeyboardContext("#task-decomposition-viewer") },
+  ];
+  const focused = contexts.find((item) => item.context.focused);
+  if (focused) return focused.name;
+  const visible = contexts
+    .filter((item) => item.context.visible)
+    .sort((a, b) => b.context.visibleHeight - a.context.visibleHeight);
+  return visible[0]?.name || "";
+}
+
+function supplementaryDetailsKeyboardContext(selector) {
+  const details = $(selector);
+  if (!details || !details.open) {
+    return { focused: false, visible: false, visibleHeight: 0 };
+  }
+  const focused = details.contains(document.activeElement);
+  const rect = details.getBoundingClientRect();
+  const visibleHeight = Math.max(0, Math.min(rect.bottom, window.innerHeight) - Math.max(rect.top, 0));
+  return {
+    focused,
+    visible: visibleHeight >= Math.min(220, rect.height * 0.25),
+    visibleHeight,
+  };
 }
 
 function setupResultsTable() {
@@ -1061,19 +1144,40 @@ function setupResultsTable() {
 
   $("#results-toggle")?.addEventListener("click", toggleResultsTable);
   renderResultsTable();
+  setupResultsTableHashDeepLink();
 }
 
 function toggleResultsTable() {
   const button = $("#results-toggle");
+  if (!button) return;
+  setResultsTableOpen(button.getAttribute("aria-expanded") !== "true");
+}
+
+function setResultsTableOpen(shouldOpen) {
+  const button = $("#results-toggle");
   const region = $("#results-table-region");
   const label = $("[data-results-toggle-label]", button);
   if (!button || !region) return;
-  const shouldOpen = button.getAttribute("aria-expanded") !== "true";
   button.setAttribute("aria-expanded", String(shouldOpen));
   region.hidden = !shouldOpen;
   if (label) {
     label.textContent = shouldOpen ? "Collapse" : "Expand";
   }
+}
+
+function setupResultsTableHashDeepLink() {
+  const openResultsTable = () => {
+    if (!RESULTS_TABLE_HASHES.has(window.location.hash)) return;
+    setResultsTableOpen(true);
+    const target = $("#zero-shot-results") || $("#results-table-region");
+    const scrollToTarget = () => target?.scrollIntoView({ block: "start" });
+    requestAnimationFrame(scrollToTarget);
+    window.setTimeout(scrollToTarget, 250);
+    window.setTimeout(scrollToTarget, 1000);
+  };
+
+  window.addEventListener("hashchange", openResultsTable);
+  openResultsTable();
 }
 
 function renderResultsTable() {
@@ -1221,11 +1325,9 @@ function renderVisualPromptExamples() {
 
   state.visualPromptIndex = clamp(state.visualPromptIndex, 0, state.visualPrompts.length - 1);
   container.innerHTML = `
-    <div class="prompt-type-browser">
+    <div class="prompt-type-browser" tabindex="0" aria-label="Visual prompt example browser">
       <div class="detail-nav prompt-type-nav">
-        <button class="nav-button" type="button" data-visual-prompt-step="-1">Previous</button>
         <span class="results-meta">Question ${pad(state.visualPromptIndex + 1)} of ${pad(state.visualPrompts.length)}</span>
-        <button class="nav-button" type="button" data-visual-prompt-step="1">Next</button>
       </div>
       <div class="segmented prompt-type-rail" role="tablist" aria-label="Visual prompt examples">
         ${state.visualPrompts
@@ -1252,9 +1354,6 @@ function renderVisualPromptExamples() {
     </div>
   `;
 
-  container.querySelectorAll("[data-visual-prompt-step]").forEach((button) => {
-    button.addEventListener("click", () => moveVisualPromptExample(Number(button.dataset.visualPromptStep)));
-  });
   container.querySelectorAll("[data-visual-prompt-index]").forEach((button) => {
     button.addEventListener("click", () => selectVisualPromptExample(Number(button.dataset.visualPromptIndex)));
   });
@@ -1292,7 +1391,7 @@ function renderVisualPromptExampleDetail(entry, index) {
         </div>
       </div>
       ${renderSelectedVisualPromptMedia(entry, selectedFormat, promptSpecs)}
-      ${renderQuestion(q, { title: `Prompt question ${index + 1}`, includeIndex: false, includeReveal: false, showCorrectOption: true })}
+      ${renderQuestion(q, { includeTitle: false, includeIndex: false, includeReveal: false, showCorrectOption: true })}
       ${renderVisualPromptResponses(entry, selectedFormat)}
     </div>
   `;
@@ -1401,6 +1500,24 @@ function moveVisualPromptExample(step) {
   renderVisualPromptExamples();
 }
 
+function setupDatasetHashDeepLink() {
+  const scrollToDatasetViewer = () => {
+    if (window.location.hash !== "#dataset") return;
+    const section = $("#dataset");
+    if (!section) return;
+    const scrollToSection = () => section.scrollIntoView({ block: "start" });
+    requestAnimationFrame(scrollToSection);
+    window.setTimeout(scrollToSection, 250);
+    window.setTimeout(scrollToSection, 1000);
+    if (document.readyState !== "complete") {
+      window.addEventListener("load", scrollToSection, { once: true });
+    }
+  };
+
+  window.addEventListener("hashchange", scrollToDatasetViewer);
+  scrollToDatasetViewer();
+}
+
 function setupVisualPromptHashDeepLink() {
   const openVisualPromptViewer = () => {
     if (window.location.hash !== "#visual-prompts") return;
@@ -1416,52 +1533,360 @@ function setupVisualPromptHashDeepLink() {
   openVisualPromptViewer();
 }
 
+function setupSelfExplanationHashDeepLink() {
+  const openSelfExplanationViewer = () => {
+    if (window.location.hash !== "#self-explanation-viewer") return;
+    const details = $("#self-explanation-viewer");
+    if (!details) return;
+    details.open = true;
+    const scrollToViewer = () => details.scrollIntoView({ block: "start" });
+    requestAnimationFrame(scrollToViewer);
+    window.setTimeout(scrollToViewer, 250);
+  };
+
+  window.addEventListener("hashchange", openSelfExplanationViewer);
+  openSelfExplanationViewer();
+}
+
+function setupTaskDecompositionHashDeepLink() {
+  const openTaskDecompositionViewer = () => {
+    if (!TASK_DECOMPOSITION_HASHES.has(window.location.hash)) return;
+    const details = $("#task-decomposition-viewer");
+    if (!details) return;
+    details.open = true;
+    const scrollToViewer = () => details.scrollIntoView({ block: "start" });
+    requestAnimationFrame(scrollToViewer);
+    window.setTimeout(scrollToViewer, 250);
+  };
+
+  window.addEventListener("hashchange", openTaskDecompositionViewer);
+  openTaskDecompositionViewer();
+}
+
 function renderSelfExplanationExamples() {
   const container = $("#self-explanation-examples");
   if (!container) return;
-  container.innerHTML = state.selfExplanations
-    .map((entry) => {
-      const q = entry.question;
-      const responses = flattenResponses(entry.responses).slice(0, 2);
-      const tags = (entry.cot_error_tags || [])
-        .map((tag) => `<span class="pill">${escapeHtml(tag.join(" "))}</span>`)
-        .join("");
-      return `
-        <article class="mini-card">
-          <span class="tag ${CATEGORY_META[q.question_category]?.className || ""}">${categoryShort(q.question_category)}</span>
-          <h3>${escapeHtml(q.furniture_name)} / ${escapeHtml(q.video_id)}</h3>
-          <p>${escapeHtml(q.question.raw_qstr)}</p>
-          <div class="question-meta">${tags}</div>
-          ${state.showGroundTruthAndResponses ? responses.map((response) => renderResponseCard(response, q)).join("") : ""}
-        </article>
-      `;
-    })
-    .join("");
+  if (state.selfExplanations.length === 0) {
+    container.innerHTML = `<div class="empty-state">No self-explanation examples available.</div>`;
+    return;
+  }
+
+  state.selfExplanationIndex = clamp(state.selfExplanationIndex, 0, state.selfExplanations.length - 1);
+  container.innerHTML = `
+    <div class="prompt-type-browser self-explanation-browser" tabindex="0" aria-label="Self-explanation example browser">
+      <div class="detail-nav prompt-type-nav self-explanation-nav">
+        <span class="results-meta">Example ${pad(state.selfExplanationIndex + 1)} of ${pad(state.selfExplanations.length)}</span>
+      </div>
+      <div class="segmented prompt-type-rail self-explanation-rail" role="tablist" aria-label="Self-explanation examples">
+        ${state.selfExplanations
+          .map((entry, index) => {
+            const q = entry.question;
+            const meta = CATEGORY_META[q.question_category] || {};
+            const active = index === state.selfExplanationIndex;
+            return `
+              <button
+                type="button"
+                role="tab"
+                aria-selected="${String(active)}"
+                data-self-explanation-index="${index}"
+                class="${active ? "active" : ""} ${escapeHtml(meta.className || "")}"
+                title="${escapeHtml(categoryShort(q.question_category))}"
+              >${pad(index + 1)}</button>
+            `;
+          })
+          .join("")}
+      </div>
+      <div id="self-explanation-example-detail">
+        ${renderSelfExplanationExample(state.selfExplanations[state.selfExplanationIndex], state.selfExplanationIndex)}
+      </div>
+    </div>
+  `;
+  container.querySelectorAll("[data-self-explanation-index]").forEach((button) => {
+    button.addEventListener("click", () => selectSelfExplanationExample(Number(button.dataset.selfExplanationIndex)));
+  });
+  container.querySelectorAll("[data-self-explanation-model]").forEach((button) => {
+    button.addEventListener("click", () => selectSelfExplanationModel(button.dataset.selfExplanationModel));
+  });
+  scheduleTrackingPromptHeights(container);
+}
+
+function renderSelfExplanationExample(entry, index) {
+  if (!entry) return `<div class="empty-state">Select an example to inspect it.</div>`;
+
+  const q = entry.question;
+  const promptSpecs = supplementaryPromptSpecs(q, "assets/supplementary/sep");
+  const responses = selfExplanationResponseRows(entry);
+  const selectedResponse = currentSelfExplanationResponse(responses);
+
+  return `
+    <article class="self-explanation-example">
+      ${renderSelfExplanationMedia(entry, promptSpecs)}
+      ${renderQuestion(q, { includeTitle: false, includeReveal: false, showCorrectOption: true })}
+      ${renderSelfExplanationModelViewer(entry, responses, selectedResponse, q)}
+    </article>
+  `;
+}
+
+function selectSelfExplanationExample(index) {
+  if (!state.selfExplanations.length) return;
+  state.selfExplanationIndex = clamp(index, 0, state.selfExplanations.length - 1);
+  renderSelfExplanationExamples();
+}
+
+function moveSelfExplanationExample(step) {
+  if (!state.selfExplanations.length) return;
+  const count = state.selfExplanations.length;
+  state.selfExplanationIndex = ((state.selfExplanationIndex + step) % count + count) % count;
+  renderSelfExplanationExamples();
+}
+
+function selectSelfExplanationModel(model) {
+  if (!model) return;
+  state.selfExplanationModel = model;
+  renderSelfExplanationExamples();
+}
+
+function renderSelfExplanationPerformance(tags = []) {
+  if (!tags.length) return "";
+
+  return `
+    <section class="self-performance-box" aria-label="Performance Indicators">
+      <h4>Performance Indicators</h4>
+      <div class="self-performance-list">
+        ${tags.map(([label, signal]) => {
+          const signalClass = signal === "+"
+            ? "is-positive"
+            : signal === "-"
+              ? "is-negative"
+              : "";
+          return `
+            <span class="self-performance-pill ${signalClass}">
+              <span>${escapeHtml(label)}</span>
+              <strong class="${signalClass}">${escapeHtml(signal || "")}</strong>
+            </span>
+          `;
+        }).join("")}
+      </div>
+    </section>
+  `;
+}
+
+function currentSelfExplanationResponse(responses) {
+  if (!responses.length) return null;
+  return responses.find((response) => response.model === state.selfExplanationModel) || responses[0];
+}
+
+function renderSelfExplanationModelViewer(entry, responses, selectedResponse, q) {
+  if (!responses.length) {
+    return `<div class="empty-state">No self-explanations available for this example.</div>`;
+  }
+
+  return `
+    <section class="self-model-viewer" aria-label="Model self-explanation viewer">
+      <h4 class="self-model-picker-label">Select Model</h4>
+      <div class="self-model-picker" role="tablist" aria-label="Choose self-explanation model">
+        ${responses.map((response) => {
+          const active = selectedResponse?.model === response.model;
+          return `
+            <button
+              type="button"
+              role="tab"
+              aria-selected="${String(active)}"
+              data-self-explanation-model="${escapeHtml(response.model)}"
+              class="${active ? "active" : ""}"
+            >${escapeHtml(response.model)}</button>
+          `;
+        }).join("")}
+      </div>
+      <div class="self-model-detail">
+        ${renderSelfExplanationResponseCard(entry, selectedResponse, q)}
+      </div>
+    </section>
+  `;
+}
+
+function renderSelfExplanationMedia(entry, promptSpecs) {
+  const videoCell = `
+    <div class="viewer-media-cell viewer-video-cell prompt-setting-cell">
+      <video src="${escapeHtml(supplementaryVideo("sep", entry.video_id, "keyframe"))}" controls playsinline preload="metadata"></video>
+      <p class="media-hint">Key-frame video</p>
+    </div>
+  `;
+
+  if (promptSpecs.length > 1) {
+    return `
+      <div class="viewer-media-tracking dataset-media prompt-type-video-row self-explanation-media" style="--prompt-count: ${promptSpecs.length};">
+        ${videoCell}
+        ${renderPromptStackCell(promptSpecs)}
+      </div>
+    `;
+  }
+
+  return `
+    <div class="viewer-media-row dataset-media prompt-type-video-row self-explanation-media">
+      ${videoCell}
+      ${promptSpecs.map((spec) => renderPromptMediaCell(spec)).join("")}
+    </div>
+  `;
+}
+
+function selfExplanationResponseRows(entry) {
+  const preferredOrder = ["Qwen2.5-VL-72B", "Gemini 2.5 Pro"];
+  return flattenResponses(entry.responses)
+    .filter((response) => preferredOrder.includes(response.model))
+    .sort((a, b) => preferredOrder.indexOf(a.model) - preferredOrder.indexOf(b.model));
+}
+
+function renderSelfExplanationResponseCard(entry, response, q) {
+  const correct = q.question?.correct_option?.label;
+  const verdict = correct && response.answer ? (response.answer === correct ? "correct" : "incorrect") : "";
+  const performance = response.model === "Gemini 2.5 Pro" ? renderSelfExplanationPerformance(entry.cot_error_tags) : "";
+  const override = window.MANUAL_OVERRIDE_HTML?.[`${entry.qid_flat}|${response.model}`];
+  const responseBody = override?.thoughts
+    ? `<div class="self-explanation-html">${override.thoughts}</div>`
+    : `<pre class="response-text">${escapeHtml(`${response.raw || ""}${response.thoughts?.length ? `\n\n${response.thoughts.join("\n\n")}` : ""}`.trim())}</pre>`;
+  const notes = override?.notes
+    ? `
+      <div class="self-explanation-notes">
+        <h4>Notes</h4>
+        ${override.notes}
+      </div>
+    `
+    : "";
+
+  return `
+    <article class="response-card self-explanation-response-card">
+      <strong>${escapeHtml(response.model)}</strong>
+      ${renderAnswerBadge(response.answer, verdict)}
+      ${performance}
+      <details open>
+        <summary>${response.model.includes("Gemini") ? "Thought summary" : "Generated explanation"}</summary>
+        ${responseBody}
+      </details>
+      ${notes}
+    </article>
+  `;
 }
 
 function renderTvaExamples() {
   const container = $("#tva-examples");
   if (!container) return;
-  container.innerHTML = state.tvaExamples
-    .map((entry) => {
-      const q = entry.question;
-      const responses = flattenResponses(entry.responses).slice(0, 2);
-      return `
-        <article class="mini-card">
-          <span class="tag ${CATEGORY_META[q.question_category]?.className || ""}">${categoryShort(q.question_category)}</span>
-          <h3>${escapeHtml(q.furniture_name)} / ${escapeHtml(q.video_id)}</h3>
-          <video src="assets/supplementary/sectiond/walkthrough_${escapeHtml(entry.video_id)}.mp4" controls playsinline preload="metadata"></video>
-          <p>${escapeHtml(q.question.raw_qstr)}</p>
-          ${state.showGroundTruthAndResponses ? responses.map((response) => renderResponseCard(response, q)).join("") : ""}
-        </article>
-      `;
-    })
-    .join("");
+  if (state.tvaExamples.length === 0) {
+    container.innerHTML = `<div class="empty-state">No TVA examples available.</div>`;
+    return;
+  }
+
+  state.tvaExampleIndex = clamp(state.tvaExampleIndex, 0, state.tvaExamples.length - 1);
+  container.innerHTML = `
+    <div class="prompt-type-browser tva-browser" tabindex="0" aria-label="TVA qualitative example browser">
+      <div class="detail-nav prompt-type-nav tva-nav">
+        <span class="results-meta">Example ${pad(state.tvaExampleIndex + 1)} of ${pad(state.tvaExamples.length)}</span>
+      </div>
+      <div class="segmented prompt-type-rail tva-rail" role="tablist" aria-label="TVA qualitative examples">
+        ${state.tvaExamples
+          .map((entry, index) => {
+            const q = entry.question;
+            const meta = CATEGORY_META[q.question_category] || {};
+            const active = index === state.tvaExampleIndex;
+            return `
+              <button
+                type="button"
+                role="tab"
+                aria-selected="${String(active)}"
+                data-tva-example-index="${index}"
+                class="${active ? "active" : ""} ${escapeHtml(meta.className || "")}"
+                title="${escapeHtml(categoryShort(q.question_category))}"
+              >${pad(index + 1)}</button>
+            `;
+          })
+          .join("")}
+      </div>
+      <div id="tva-example-detail">
+        ${renderTvaExample(state.tvaExamples[state.tvaExampleIndex])}
+      </div>
+    </div>
+  `;
+
+  container.querySelectorAll("[data-tva-example-index]").forEach((button) => {
+    button.addEventListener("click", () => selectTvaExample(Number(button.dataset.tvaExampleIndex)));
+  });
+  scheduleTrackingPromptHeights(container);
+}
+
+function renderTvaExample(entry) {
+  if (!entry) return `<div class="empty-state">Select an example to inspect it.</div>`;
+
+  const q = entry.question;
+  const promptSpecs = supplementaryPromptSpecs(q, "assets/supplementary/sep");
+
+  return `
+    <article class="tva-example">
+      ${renderTvaMedia(entry, promptSpecs)}
+      ${renderQuestion(q, { includeTitle: false, includeReveal: false, showCorrectOption: true })}
+      ${renderTvaWalkthrough(entry)}
+    </article>
+  `;
+}
+
+function selectTvaExample(index) {
+  if (!state.tvaExamples.length) return;
+  state.tvaExampleIndex = clamp(index, 0, state.tvaExamples.length - 1);
+  renderTvaExamples();
+}
+
+function moveTvaExample(step) {
+  if (!state.tvaExamples.length) return;
+  const count = state.tvaExamples.length;
+  state.tvaExampleIndex = ((state.tvaExampleIndex + step) % count + count) % count;
+  renderTvaExamples();
+}
+
+function renderTvaMedia(entry, promptSpecs) {
+  const videoCell = `
+    <div class="viewer-media-cell viewer-video-cell">
+      <video src="${escapeHtml(supplementaryVideo("sep", entry.video_id, "trimmed"))}" controls playsinline preload="metadata"></video>
+      <p class="media-hint">Trimmed video</p>
+    </div>
+  `;
+
+  if (promptSpecs.length > 1) {
+    return `
+      <div class="viewer-media-tracking dataset-media prompt-type-video-row tva-media" style="--prompt-count: ${promptSpecs.length};">
+        ${videoCell}
+        ${renderPromptStackCell(promptSpecs)}
+      </div>
+    `;
+  }
+
+  return `
+    <div class="viewer-media-row dataset-media prompt-type-video-row tva-media">
+      ${videoCell}
+      ${promptSpecs.map((spec) => renderPromptMediaCell(spec)).join("")}
+    </div>
+  `;
+}
+
+function renderTvaWalkthrough(entry) {
+  const src = `assets/supplementary/sectiond/walkthrough_${entry.video_id}.mp4`;
+  return `
+    <section class="tva-walkthrough-card" aria-label="TVA walkthrough video">
+      <div class="tva-walkthrough-copy">
+        <h3>Walkthrough Video</h3>
+        <p>
+          A walkthrough demonstrating the execution of the code generated by the
+          agent. The generated function received the above video, frame index and
+          part masks used to construct the above visual prompt(s).
+        </p>
+      </div>
+      <video class="tva-walkthrough-video" src="${escapeHtml(src)}" controls playsinline preload="metadata"></video>
+    </section>
+  `;
 }
 
 function renderQuestion(q, options = {}) {
   const meta = CATEGORY_META[q.question_category] || { label: q.question_category, short: q.question_category, className: "" };
   const title = options.title || "Question";
+  const titleMarkup = options.includeTitle === false ? "" : `<h3>${escapeHtml(title)}</h3>`;
   const revealControl = options.includeReveal === false ? "" : renderRevealControl();
   return `
     <div class="question-card">
@@ -1471,7 +1896,7 @@ function renderQuestion(q, options = {}) {
         </div>
         ${revealControl}
       </div>
-      <h3>${escapeHtml(title)}</h3>
+      ${titleMarkup}
       <p class="question-text">${escapeHtml(q.question.raw_qstr)}</p>
       ${renderOptions(q, options)}
     </div>
@@ -1682,6 +2107,50 @@ function syncRevealControls() {
   });
 }
 
+function setupErrorPieHover() {
+  const chart = $(".self-error-chart");
+  if (!chart) return;
+  const pie = $("[data-error-pie]", chart);
+  const rows = $$("[data-error-key]", chart);
+  if (!pie || rows.length === 0) return;
+
+  let activeKey = "";
+
+  const setActiveKey = (key) => {
+    if (key === activeKey) return;
+    activeKey = key;
+    if (key) {
+      chart.dataset.activeError = key;
+    } else {
+      chart.removeAttribute("data-active-error");
+    }
+    rows.forEach((row) => {
+      row.classList.toggle("is-highlighted", row.dataset.errorKey === key);
+    });
+  };
+
+  pie.addEventListener("pointermove", (event) => {
+    setActiveKey(errorPieSliceFromPointer(event, pie));
+  });
+  pie.addEventListener("pointerleave", () => setActiveKey(""));
+  pie.addEventListener("pointercancel", () => setActiveKey(""));
+}
+
+function errorPieSliceFromPointer(event, pie) {
+  const rect = pie.getBoundingClientRect();
+  const radius = Math.min(rect.width, rect.height) / 2;
+  const dx = event.clientX - (rect.left + rect.width / 2);
+  const dy = event.clientY - (rect.top + rect.height / 2);
+  const distance = Math.hypot(dx, dy);
+
+  if (distance < radius * 0.52 || distance > radius) return "";
+
+  const degreesFromTop = (Math.atan2(dy, dx) * 180 / Math.PI + 90 + 360) % 360;
+  const percent = degreesFromTop / 3.6;
+  const slice = ERROR_PIE_SLICES.find(({ start, end }) => percent >= start && percent < end);
+  return slice ? slice.key : "";
+}
+
 function setupTableOfContents() {
   const links = $$(".toc a[href^='#']");
   const sections = links
@@ -1742,6 +2211,89 @@ function setupTableOfContents() {
   updateActiveSection();
 }
 
+function setupBibtexCopy() {
+  document.addEventListener("click", (event) => {
+    if (!(event.target instanceof Element)) return;
+    const button = event.target.closest("[data-copy-bibtex]");
+    if (!button) return;
+    copyBibtex(button);
+  });
+}
+
+async function copyBibtex(button) {
+  const code = button.closest(".bibtex-shell")?.querySelector("code");
+  const label = $("span", button);
+  const defaultLabel = button.dataset.copyLabel || "Copy";
+  const copiedLabel = button.dataset.copiedLabel || "Copied";
+  const text = code?.textContent.trim();
+  if (!text) return;
+
+  const resetExisting = Number(button.dataset.copyResetTimer || 0);
+  window.clearTimeout(resetExisting);
+
+  try {
+    if (navigator.clipboard?.writeText) {
+      try {
+        await navigator.clipboard.writeText(text);
+      } catch {
+        copyTextFallback(text);
+      }
+    } else {
+      copyTextFallback(text);
+    }
+
+    setBibtexCopyState(button, label, copiedLabel, true);
+  } catch (error) {
+    console.error("Unable to copy BibTeX", error);
+    setBibtexCopyState(button, label, "Failed", false);
+  }
+
+  const resetTimer = window.setTimeout(() => {
+    setBibtexCopyState(button, label, defaultLabel, false);
+    delete button.dataset.copyResetTimer;
+  }, 1800);
+  button.dataset.copyResetTimer = String(resetTimer);
+}
+
+function setBibtexCopyState(button, label, text, copied) {
+  if (label) label.textContent = text;
+  button.classList.toggle("is-copied", copied);
+}
+
+function copyTextFallback(text) {
+  let handled = false;
+  const onCopy = (event) => {
+    event.clipboardData?.setData("text/plain", text);
+    event.preventDefault();
+    handled = true;
+  };
+
+  document.addEventListener("copy", onCopy);
+  const copiedFromEvent = document.execCommand("copy");
+  document.removeEventListener("copy", onCopy);
+  if (copiedFromEvent || handled) return;
+
+  const textarea = document.createElement("textarea");
+  textarea.value = text;
+  textarea.setAttribute("readonly", "");
+  textarea.style.position = "fixed";
+  textarea.style.top = "0";
+  textarea.style.left = "0";
+  textarea.style.width = "1px";
+  textarea.style.height = "1px";
+  textarea.style.opacity = "0";
+  document.body.append(textarea);
+  textarea.focus({ preventScroll: true });
+  textarea.select();
+  textarea.setSelectionRange(0, textarea.value.length);
+
+  const copied = document.execCommand("copy");
+  textarea.remove();
+  if (!copied) {
+    throw new Error("Clipboard fallback failed");
+  }
+}
+
 function setupGlobalEvents() {
   document.addEventListener("click", (event) => {
     const revealButton = event.target.closest("[data-reveal-toggle]");
@@ -1789,9 +2341,10 @@ function setupGlobalEvents() {
     if (event.metaKey || event.ctrlKey || event.altKey) return;
     const tagName = document.activeElement?.tagName;
     if (["INPUT", "SELECT", "TEXTAREA"].includes(tagName)) return;
-    if (isVsiGameKeyboardContext()) {
-      if (handleVsiGameNavigationKey(event, { focusTab: true })) return;
+    if (isFpbGameKeyboardContext()) {
+      if (handleFpbGameNavigationKey(event, { focusTab: true })) return;
     }
+    if (handleSupplementaryExplorerNavigationKey(event)) return;
     if (!isDatasetViewerKeyboardContext()) return;
     const isNextKey = ["ArrowRight", "ArrowDown", "j", "J"].includes(event.key);
     const isPreviousKey = ["ArrowLeft", "ArrowUp", "k", "K"].includes(event.key);
@@ -1872,9 +2425,9 @@ function promptKindDescription(kind) {
   }[kind] || "";
 }
 
-function vsiGameRevealLabel(canReveal) {
+function fpbGameRevealLabel(canReveal) {
   if (!canReveal) return "Select an option";
-  return state.vsiGameRevealed ? "Hide answer" : "Click to view Ground Truth and LVLMs' answers!";
+  return state.fpbGameRevealed ? "Hide answer" : "Click to view Ground Truth and LVLMs' answers!";
 }
 
 function exampleCaption(q) {

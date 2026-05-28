@@ -607,8 +607,8 @@ function initHeroTeaser(container) {
     const bounds = container.getBoundingClientRect();
     const width = Math.max(1, Math.round(bounds.width));
     const height = Math.max(1, Math.round(bounds.height));
-    const hero = document.querySelector(".vsi-hero");
-    const useBannerOverscan = document.body.classList.contains("homepage-vsi-banner") && hero;
+    const hero = document.querySelector(".fpb-hero");
+    const useBannerOverscan = document.body.classList.contains("homepage-fpb") && hero;
     const heroBounds = useBannerOverscan ? hero.getBoundingClientRect() : null;
     const leftOverscan = useBannerOverscan ? Math.max(0, Math.ceil(bounds.left - heroBounds.left)) : 0;
     const topOverscan = useBannerOverscan ? Math.max(0, Math.ceil(bounds.top - heroBounds.top)) : 0;

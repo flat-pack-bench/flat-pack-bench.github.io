@@ -2,7 +2,7 @@
 """Build static assets for the Flat-Pack Bench project page.
 
 This script intentionally writes only into this repository's assets/ tree.
-It copies source PDFs/supplementary media, normalizes JSON data, resolves any
+It copies the source paper PDF and supplementary media, normalizes JSON data, resolves any
 locally available prompt images, and optionally transcodes viewer videos.
 """
 
@@ -24,7 +24,6 @@ DATA_DIR = ASSETS / "data"
 
 PAPER_PDF = Path("/Users/justachetan/Downloads/flat_pack_bench_arxiv.pdf")
 SUPPLEMENTARY_ROOT = Path("/Users/justachetan/Downloads/old_supplementary")
-SUPPLEMENTARY_PDF = SUPPLEMENTARY_ROOT / "flat_pack_bench_cvpr_2026_submission_supplementary.pdf"
 QUESTION_DATA_ROOT = Path("/Users/justachetan/work/research/flat-pack-bench-data")
 VIDEO_ROOT = Path("/Users/justachetan/work/research/videos")
 PROMPT_IMAGE_ROOT = Path("/Users/justachetan/Downloads/prompt_images")
@@ -434,7 +433,6 @@ def build_data_assets() -> dict:
 
     pdfs = {
         "paper": copy_if_exists(PAPER_PDF, ASSETS / "flat_pack_bench_arxiv.pdf"),
-        "supplementary": copy_if_exists(SUPPLEMENTARY_PDF, ASSETS / "flat_pack_bench_cvpr_2026_submission_supplementary.pdf"),
     }
     supplementary_assets = copy_supplementary_media()
 

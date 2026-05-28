@@ -1,1 +1,142 @@
-Hello world
+<style>
+  .example .media {
+    display: flex;
+    flex-wrap: nowrap;
+    gap: 1rem;
+    align-items: flex-start;
+    margin: 1rem 0;
+    overflow-x: auto;
+  }
+
+  .example .media video,
+  .example .media img {
+    width: 500px;
+    max-width: 100%;
+    height: auto;
+  }
+
+  .example .media > div {
+    flex: 0 0 500px;
+  }
+
+  .example .media video,
+  .example .media > img {
+    flex: 0 0 500px;
+  }
+
+  .example .media-label {
+    display: block;
+    margin: 0 0 0.75rem;
+  }
+</style>
+<p> <b> Thank you for participating in our study! </b> This study looks at how people interpret furniture assembly videos. These instructions will be visible to you within the study window too. </p>
+<p>In this study, you will answer questions about furniture assembly videos. For each question, you will see:</p>
+<ul>
+   <li>a video showing a furniture item being assembled</li>
+   <li>one or two labeled images taken from the video: the images would have furniture parts highlighted and numbered</li>
+   <li>a multiple-choice question about the parts shown: each questions and corresponding options will refer to the above-mentioned numbered parts</li>
+</ul>
+<h2 id="your-task">Your Task</h2>
+<ol>
+   <li>Watch the video of the IKEA furniture being assembled in the task.</li>
+   <li>Take a look at the images provided with the question and identify the parts mentioned in the question.</li>
+   <li>Use the video and labeled images to answer the question as accurately as you can.</li>
+   <li>Feel free to forward or rewind the video to revisit the steps during the assembly process.</li>
+</ol>
+<h2 id="tips-to-complete-the-task-successfully">Tips to complete the task successfully</h2>
+
+<p><b>Important:</b> These questions <b>cannot</b> be answered correctly by relying on the image(s) alone. You will need to watch and use the video to answer accurately. The images are intended only to help you identify the parts mentioned in the question; the video is necessary for understanding how those parts are connected throughout the assembly process.</p>
+
+<p>Please take your time and answer as carefully as you can. If the task is taking longer than expected, feel free to send us a message. We especially appreciate thoughtful, high-quality responses, and we may award bonuses to participants who demonstrate exceptional care and effort.</p>
+<h3 id="if-unsure">If Unsure</h3>
+<p>If you find the question unclear, or incorrect, please select the closest option, and also check the &quot;Not Sure&quot; option. If possible, please provide us with a short description of why you found the question unclear. You can refer to specific timestamps in the video that had you confused about your response. </p>
+<h3 id="when-two-images-are-shown">When two images are shown</h3>
+<p>Sometimes you will see <strong>Image A</strong> and <strong>Image B</strong>. In these cases, use the video to help determine which parts correspond across the two images. Do not rely only on the label positions in the images.</p>
+<h3 id="important-definitions">Important Definitions</h3>
+<ul>
+   <li>
+      <strong>&quot;Connected&quot; Parts</strong>:
+      <ul>
+         <li>Two parts are considered <strong>connected</strong> when they are attached to each other as part of the intended assembly.</li>
+         <li>Incidental physical contact, contact during handling or temporary resting is not considered &quot;connected&quot;.</li>
+         <li>If two parts are connected, later separated, and then connected again, use the <strong>most recent connection</strong> when answering questions about connection order.</li>
+         <li>If two parts are physically attached before they are fully secured (for example, before tightening screws), treat them as connected from the moment they are first attached.</li>
+         <li>
+            For example:
+            <ul>
+               <li>If a board is briefly placed on another part while the assembler unpacks the parts before assembly it, that does not count as connected.</li>
+               <li>
+                  If a leg is inserted into its intended slot, that counts as connected even before it is fully tightened.
+               </li>
+            </ul>
+         </li>
+      </ul>
+   </li>
+</ul>
+
+<h3 id="how-can-i-do-this-task-faster-">How can I do this task faster?</h3>
+<p>As a tip, it might help to watch the video completely first, and make a note of which parts are being connected together and in what order.</p>
+<p>What you learn by watching the video may be applicable to multiple questions, allowing you to solve the questions more efficiently.</p>
+<div v-show="stage == 'reading'">
+<p>Below, we provide some examples of the kinds of questions you will be shown:</p>
+<h3 style="margin-bottom: 0.5rem"> Example 1 </h3>
+<div class="example">
+  <b>Question</b><p>Which highlighted pair of parts is connected first in the video?</p>
+  <div><h5>Options</h5><p class="option"><span class="">A. Part 5, Part 0</span></p><p class="option"><span class="">B. Part 2, Part 0</span></p><p class="option"><span class="">C. Part 4, Part 0</span></p><p class="option"><span class="correct">D. Part 3, Part 0</span></p></div>
+  <div class="media">
+    <video controls="controls" src="https://flat-pack-bench.github.io/videos/keyframe_videos/Chair/mammut_1/FoVtnbm0hPc/FoVtnbm0hPc.mp4"></video>
+    <img src="https://flat-pack-bench.github.io/assets/prompt-images/1edge_order/Chair/mammut_1/FoVtnbm0hPc/prompt_001_q034.jpg" alt="Example 1 labeled prompt image">
+  </div>
+</div>
+
+<b>Explanation: </b>
+<ul>
+   <li>We can see that the frame seems to have been taken from around (00:01) in the video. </li>
+   <li>If we forward the video a little bit ahead we can observe around (00:02-00:04) that the person picks part 3 and around (00:13) we can see that they connect it to part 0. </li>
+   <li>Further, scrolling ahead in the video shows that part 3 is never disconnected from part 0. </li>
+   <li>Thus, it remains the first part connected to part 0 and therefore the answer is option D.</li>
+</ul>
+
+<h3 style="margin-bottom: 0.5rem"> Example 2 </h3>
+<div class="example">
+  <b>Question</b><p>Identify the correct set of matches from Image A to Image B.</p><div><h5>Options</h5><p class="option"><span class="">A.
+ Part 3 in Image A matches Part 4 in Image B, Part 2 in Image A matches
+Part 2 in Image B,  and Part 5 in Image A matches Part 5 in Image B</span></p><p class="option"><span class="">B.
+ Part 3 in Image A matches Part 3 in Image B, Part 2 in Image A matches
+Part 2 in Image B,  and Part 5 in Image A matches Part 5 in Image B</span></p><p class="option"><span class="">C.
+ Part 3 in Image A matches Part 5 in Image B, Part 2 in Image A matches
+Part 3 in Image B,  and Part 5 in Image A matches Part 2 in Image B</span></p><p class="option"><span class="correct">D.
+ Part 3 in Image A matches Part 4 in Image B, Part 2 in Image A matches
+Part 5 in Image B,  and Part 5 in Image A matches Part 2 in Image B</span></p></div>
+
+<div class="media">
+<div><h3 class="media-label">Video</h3><video controls="controls" src="https://flat-pack-bench.github.io/videos/keyframe_videos/Chair/mammut_1/FoVtnbm0hPc/FoVtnbm0hPc.mp4"></video></div><div><h3 class="media-label">Image A</h3><img src="https://flat-pack-bench.github.io/assets/prompt-images/track_multi/Chair/mammut_1/FoVtnbm0hPc/prompt_001_q064.jpg" alt="Example 2 Image A labeled prompt"></div><div><h3 class="media-label">Image B</h3><img src="https://flat-pack-bench.github.io/assets/prompt-images/track_multi/Chair/mammut_1/FoVtnbm0hPc/jumbled_prompt_072_q064.jpg" alt="Example 2 Image B labeled prompt">
+</div>
+
+</div>
+
+
+</div>
+
+
+<b>Explanation: </b>
+<ul>
+   <li>We can see that Image A and Image B are lifted from the video around (00:01) and (01:13) respectively. We can focus on the video between these two timestamps.</li>
+   <li>First the person picks part 3 in Image A around (00:01) and connects it to part 0 around (00:13) in the left socket (in the image) and closer to the camera. This clearly corresponds to part 4 in Image B.</li>
+   <li>Next, the person picks part 5 in Image A around (00:22) and connects it to part 0 around (00:48) in the left socket (in the image) and farther from the camera. This clearly corresponds to part 2 in Image B.</li>
+   <li>After this, the person picks up part 2 in Image A around (00:51) and connects it to part 0 around (01:00) in the right socket (in the image) and closer to the camera. This clearly corresponds to part 5 in Image B.</li>
+   <li>And finally, the person picks up part 4 around (01:01) and connects it to part 0 around (01:07) in the right socket (in the image) and farther from the camera. This clearly corresponds to part 3 in Image B.</li>
+   <li>
+      Thus, the final matching would be:
+      <ul>
+         <li>Part 3 (Image A) --&gt; Part 5 (Image B)</li>
+         <li>Part 5 (Image A) --&gt; Part 2 (Image B)</li>
+         <li>Part 2 (Image A) --&gt; Part 5 (Image B)</li>
+         <li>Part 4 (Image A) --&gt; Part 3 (Image B)</li>
+      </ul>
+   </li>
+   <li>Thus the correct answer is Option D.</li>
+</ul>
+</div>
+<!--<h2 id="acknowledgement">Acknowledgement</h2>-->
+<button @click="stage = 'started'"> I have read and understood the task description</button>
