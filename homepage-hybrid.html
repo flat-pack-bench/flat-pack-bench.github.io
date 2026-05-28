@@ -1,0 +1,250 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta
+      name="description"
+      content="Hybrid Flat-Pack Bench homepage prototype with a restrained hero and first-screen demo video."
+    >
+    <title>Flat-Pack Bench | Hybrid Prototype</title>
+    <link rel="stylesheet" href="assets/css/styles.css?v=20260428-6">
+    <link rel="stylesheet" href="assets/css/homepage-variants.css?v=20260520-1">
+  </head>
+  <body class="variant-page homepage-hybrid">
+    <header class="variant-hero" id="top">
+      <nav class="variant-nav" aria-label="Primary navigation">
+        <a class="variant-mark" href="#top">Flat-Pack Bench</a>
+        <span class="variant-nav-links">
+          <a href="homepage-variants.html">Prototypes</a>
+          <a href="#dataset">Viewer</a>
+          <a href="#results">Results</a>
+          <a href="#citation">Citation</a>
+        </span>
+      </nav>
+
+      <div class="hybrid-hero-grid">
+        <div class="variant-hero-copy">
+          <p class="variant-kicker">Furniture assembly as a video reasoning benchmark</p>
+          <h1>Flat-Pack Bench</h1>
+          <p class="variant-subtitle">
+            Evaluating Spatio-Temporal Understanding in Large Vision-Language Models
+            through Furniture Assembly
+          </p>
+          <p class="variant-authors">
+            Aditya Chetan, Eric Cai, Peeyush Kushwaha, Bharath Raj Nagoor Kani,
+            Utkarsh Mall, Qianqian Wang, Noah Snavely, Bharath Hariharan
+          </p>
+          <p class="variant-status">CVPR 2026</p>
+          <p class="variant-summary">
+            Flat-Pack Bench asks models to understand when parts move, touch,
+            connect, and stay identical across real assembly videos. The first thing
+            visitors see here is the benchmark setup, not a decorative hero.
+          </p>
+          <div class="plain-links" aria-label="Project resources">
+            <a href="https://openaccess.thecvf.com/content/CVPR2026/papers/Chetan_Flat-Pack_Bench_Evaluating_Spatio-Temporal_Understanding_in_Large_Vision-Language_Models_through_CVPR_2026_paper.pdf">PDF</a>
+            <a href="https://huggingface.co/collections/justachetan/flat-pack-bench">Data</a>
+            <a href="#dataset">Viewer</a>
+            <a href="#results">Results</a>
+            <a href="#citation">Citation</a>
+          </div>
+          <div class="variant-logos" aria-label="Author affiliations">
+            <img src="assets/logos/cornell.svg" alt="Cornell University">
+            <img src="assets/logos/mbzuai.png" alt="MBZUAI">
+            <img src="assets/logos/berkeley.svg" alt="UC Berkeley">
+          </div>
+        </div>
+        <figure class="demo-figure">
+          <video
+            controls
+            playsinline
+            preload="metadata"
+            poster="assets/supplementary/sep/FoVtnbm0hPc_001.jpg"
+          >
+            <source src="assets/supplementary/sectiond/walkthrough_FoVtnbm0hPc.mp4" type="video/mp4">
+          </video>
+          <figcaption>Demo video: assembly walkthrough and question context.</figcaption>
+        </figure>
+      </div>
+    </header>
+
+    <main class="variant-content content">
+      <section class="compact-section" id="overview">
+        <h2>What the benchmark tests</h2>
+        <p>
+          Assembly videos expose temporal and object-centric reasoning failures that
+          are easy to miss in static image benchmarks. Flat-Pack Bench focuses on
+          contact events, part identity, assembly order, and final connectivity.
+        </p>
+      </section>
+
+      <section class="compact-section" id="benchmark">
+        <h2>Benchmark at a glance</h2>
+        <div class="metric-row benchmark-metrics compact-metrics" id="benchmark-stats" aria-live="polite"></div>
+        <div class="compact-grid">
+          <article data-category-card="temporal_loc">
+            <strong>Temporal Localization</strong>
+            <span class="category-count">103 questions</span>
+          </article>
+          <article data-category-card="temporal_ord">
+            <strong>Temporal Ordering</strong>
+            <span class="category-count">155 questions</span>
+          </article>
+          <article data-category-card="mating">
+            <strong>Mating</strong>
+            <span class="category-count">87 questions</span>
+          </article>
+          <article data-category-card="tracking">
+            <strong>Tracking</strong>
+            <span class="category-count">257 questions</span>
+          </article>
+        </div>
+      </section>
+
+      <section class="compact-section" id="dataset">
+        <h2>Dataset Viewer</h2>
+        <p>
+          The viewer stays available, but it no longer pushes the first demo video
+          below several explanatory sections.
+        </p>
+        <div class="viewer-shell" id="dataset-viewer">
+          <div class="viewer-toolbar">
+            <div>
+              <p class="small-label">View</p>
+              <div class="segmented view-switch" id="dataset-viewer-mode">
+                <button type="button" data-viewer-mode="curated" class="active">Curated samples</button>
+                <button type="button" data-viewer-mode="full">Full dataset</button>
+              </div>
+            </div>
+            <div>
+              <p class="small-label">Video</p>
+              <div class="segmented" id="dataset-video-mode">
+                <button type="button" data-mode="keyframe" class="active">Keyframe</button>
+                <button type="button" data-mode="trimmed">Trimmed</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="dataset-controls" id="dataset-filters" role="search" hidden>
+            <label>
+              Search
+              <input id="dataset-search" type="search" placeholder="question, video, furniture, template">
+            </label>
+            <label>
+              Category
+              <select id="category-filter"></select>
+            </label>
+            <label>
+              Template
+              <select id="template-filter"></select>
+            </label>
+            <label>
+              Furniture
+              <select id="furniture-filter"></select>
+            </label>
+          </div>
+
+          <div class="dataset-layout" id="curated-sample-view">
+            <div class="question-list-panel">
+              <div class="list-header">
+                <span id="sample-count">0 curated samples</span>
+                <span class="keyboard-hint">Use arrow keys</span>
+              </div>
+              <div class="question-list" id="example-tabs"></div>
+              <div class="category-legend" id="sample-legend" aria-label="Question family legend"></div>
+            </div>
+            <article class="dataset-detail" id="curated-detail"></article>
+          </div>
+
+          <div class="dataset-layout" id="full-dataset-view" hidden>
+            <div class="question-list-panel">
+              <div class="list-header">
+                <span id="dataset-count">0 questions</span>
+                <span class="keyboard-hint">Use J/K or arrow keys</span>
+              </div>
+              <div class="question-list" id="question-list"></div>
+              <div class="category-legend" id="dataset-legend" aria-label="Question family legend"></div>
+            </div>
+            <article class="dataset-detail" id="dataset-detail"></article>
+          </div>
+        </div>
+      </section>
+
+      <section class="compact-section" id="results">
+        <h2>Results</h2>
+        <div class="result-strip">
+          <div><span>Human</span><strong>94.18</strong></div>
+          <div><span>Open models</span><strong>41.03</strong></div>
+          <div><span>Closed models</span><strong>37.71</strong></div>
+        </div>
+        <div class="results-panel results-collapsible" id="results-collapsible">
+          <button class="results-toggle" id="results-toggle" type="button" aria-expanded="false" aria-controls="results-table-region">
+            <span>Main results table</span>
+            <span data-results-toggle-label>Expand</span>
+          </button>
+          <div id="results-table-region" hidden>
+            <div class="results-toolbar">
+              <label class="results-search" for="results-search">
+                <span>Search</span>
+                <input id="results-search" type="search" placeholder="Filter by model, prompt, or video">
+              </label>
+              <span class="results-meta" id="results-count" aria-live="polite">0 configurations</span>
+            </div>
+            <div class="results-filters" id="active-results-filters" aria-live="polite"></div>
+            <form class="filter-form" id="results-filter-form">
+              <label for="results-filter-field">Add filter</label>
+              <select id="results-filter-field">
+                <option value="model">Model</option>
+                <option value="prompt">Prompt</option>
+                <option value="video">Video</option>
+              </select>
+              <input id="results-filter-value" type="text" placeholder="Exact value" list="results-filter-options" autocomplete="off">
+              <button type="submit">Add</button>
+            </form>
+            <datalist id="results-filter-options"></datalist>
+            <div class="table-wrap">
+              <table id="results-table">
+                <thead>
+                  <tr>
+                    <th data-sort="model">Model</th>
+                    <th data-sort="prompt">Prompt</th>
+                    <th data-sort="video">Video</th>
+                    <th data-sort="micro">Micro</th>
+                    <th>95% CI</th>
+                    <th data-sort="tord">TORD</th>
+                    <th data-sort="tloc">TLOC</th>
+                    <th data-sort="track">TRACK</th>
+                    <th data-sort="mate">MATE</th>
+                  </tr>
+                </thead>
+                <tbody></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="compact-section" id="citation">
+        <h2>Citation</h2>
+        <pre class="variant-bibtex"><code>@InProceedings{Chetan_2026_CVPR,
+    author    = {Chetan, Aditya and Cai, Eric and Kushwaha, Peeyush and Kani, Bharath Raj Nagoor and Mall, Utkarsh and Wang, Qianqian and Snavely, Noah and Hariharan, Bharath},
+    title     = {Flat-Pack Bench: Evaluating Spatio-Temporal Understanding in Large Vision-Language Models through Furniture Assembly},
+    booktitle = {Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR)},
+    month     = {June},
+    year      = {2026},
+    pages     = {16624-16634}
+}</code></pre>
+      </section>
+    </main>
+
+    <div class="image-overlay" id="image-overlay" hidden>
+      <button class="image-overlay-close" type="button" aria-label="Close expanded prompt image">Close</button>
+      <figure>
+        <img alt="">
+        <figcaption></figcaption>
+      </figure>
+    </div>
+
+    <script type="module" src="assets/js/app.js?v=20260428-2"></script>
+  </body>
+</html>

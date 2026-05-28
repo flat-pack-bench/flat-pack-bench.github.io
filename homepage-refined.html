@@ -5,26 +5,27 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta
       name="description"
-      content="Flat-Pack Bench evaluates spatio-temporal video understanding in large vision-language models through furniture assembly."
+      content="Refined Flat-Pack Bench homepage prototype that keeps the current structure while reducing scale and moving the demo video up."
     >
-    <title>Flat-Pack Bench</title>
+    <title>Flat-Pack Bench | Refined Prototype</title>
     <link rel="stylesheet" href="assets/css/styles.css?v=20260428-6">
+    <link rel="stylesheet" href="assets/css/homepage-variants.css?v=20260520-1">
   </head>
-  <body>
-    <header class="hero" id="top">
+  <body class="variant-page homepage-refined">
+    <header class="hero refined-hero" id="top">
       <nav class="topbar" aria-label="Primary navigation">
         <a class="mark" href="#top">Flat-Pack Bench</a>
         <div class="topbar-links">
+          <a href="homepage-variants.html">Prototypes</a>
           <a href="#overview">Overview</a>
-          <a href="#benchmark">Benchmark</a>
           <a href="#dataset">Dataset Viewer</a>
           <a href="#results">Results</a>
           <a href="#citation">Citation</a>
         </div>
       </nav>
 
-      <div class="hero-grid">
-        <div class="hero-copy">
+      <div class="refined-hero-grid">
+        <div class="hero-copy refined-copy">
           <p class="eyebrow">Furniture assembly as a spatio-temporal stress test</p>
           <h1 class="paper-title" aria-label="Flat-Pack Bench">
             <span class="sc-cap">F</span><span class="sc-small">LAT</span><span class="sc-punct">-</span><span class="sc-cap">P</span><span class="sc-small">ACK</span><span class="sc-cap sc-word">B</span><span class="sc-small">ENCH</span>
@@ -45,59 +46,36 @@
             <a class="author-affiliation affiliation-cornell" href="https://www.cs.cornell.edu/~bharathh/">Bharath Hariharan</a>
           </p>
           <p class="paper-status">
-            <a href="https://cvpr.thecvf.com/">✨ CVPR 2026 ✨</a>
+            <a href="https://cvpr.thecvf.com/">CVPR 2026</a>
           </p>
-          <div class="affiliation-logos" aria-label="Author affiliations">
-            <a class="affiliation-cornell" href="https://www.cornell.edu/" aria-label="Cornell University">
-              <img src="assets/logos/cornell.svg" alt="Cornell University">
-            </a>
-            <a class="affiliation-mbzuai" href="https://mbzuai.ac.ae/" aria-label="Mohamed bin Zayed University of Artificial Intelligence">
-              <img src="assets/logos/mbzuai.png" alt="MBZUAI">
-            </a>
-            <a class="affiliation-ucb" href="https://www.berkeley.edu/" aria-label="University of California, Berkeley">
-              <img src="assets/logos/berkeley.svg" alt="UC Berkeley">
-            </a>
-          </div>
-          <div class="hero-teaser" aria-label="Animated robot watching Flat-Pack Bench assembly teaser">
-            <div class="hero-teaser-scene" id="hero-teaser-scene"></div>
-          </div>
-          <div class="resource-row" aria-label="Project resources">
-            <a class="button" href="https://arxiv.org/abs/2605.21625">
-              <img
-                class="button-icon image-icon"
-                src="https://cdn.jsdelivr.net/gh/jpswalsh/academicons@1/svg/arxiv.svg"
-                alt=""
-                aria-hidden="true"
-              >
-              <span>arXiv</span>
-            </a>
-            <a class="button" href="https://openaccess.thecvf.com/content/CVPR2026/papers/Chetan_Flat-Pack_Bench_Evaluating_Spatio-Temporal_Understanding_in_Large_Vision-Language_Models_through_CVPR_2026_paper.pdf">
-              <i class="fa-solid fa-file-pdf button-icon" aria-hidden="true"></i>
-              <span>PDF</span>
-            </a>
-            <a class="button disabled" href="#" aria-disabled="true" tabindex="-1">
-              <svg class="button-icon brand-icon" viewBox="0 0 24 24" aria-hidden="true">
-                <path d="M12 2.25a9.75 9.75 0 0 0-3.08 19c.49.09.67-.21.67-.47v-1.71c-2.73.59-3.31-1.18-3.31-1.18-.45-1.12-1.09-1.42-1.09-1.42-.89-.61.07-.6.07-.6.98.07 1.5 1.01 1.5 1.01.88 1.5 2.3 1.07 2.86.82.09-.63.34-1.07.62-1.31-2.18-.25-4.47-1.09-4.47-4.86 0-1.07.38-1.95 1.01-2.64-.1-.25-.44-1.25.1-2.6 0 0 .83-.26 2.7 1.01A9.31 9.31 0 0 1 12 6.96c.83 0 1.67.11 2.46.34 1.87-1.27 2.69-1.01 2.69-1.01.54 1.35.2 2.35.1 2.6.63.69 1.01 1.57 1.01 2.64 0 3.78-2.3 4.61-4.49 4.85.35.3.66.9.66 1.82v2.58c0 .26.18.57.68.47A9.75 9.75 0 0 0 12 2.25z"></path>
-              </svg>
-              <span>Code <span class="coming-soon">(Coming soon)</span></span>
-            </a>
-            <a class="button" href="https://huggingface.co/collections/justachetan/flat-pack-bench">
-              <i class="fa-solid fa-database button-icon" aria-hidden="true"></i>
-              <span>Data</span>
-            </a>
-            <a class="button" href="#dataset">
-              <svg class="button-icon" viewBox="0 0 24 24" aria-hidden="true">
-                <path d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6-10-6-10-6z"></path>
-                <circle cx="12" cy="12" r="3"></circle>
-              </svg>
-              <span>Viewer</span>
-            </a>
+          <p class="refined-abstract">
+            Flat-Pack Bench evaluates whether large vision-language models can reason
+            about part identity, contact events, assembly order, and final connectivity
+            across real furniture assembly videos.
+          </p>
+          <div class="resource-row refined-links" aria-label="Project resources">
+            <a class="button" href="https://openaccess.thecvf.com/content/CVPR2026/papers/Chetan_Flat-Pack_Bench_Evaluating_Spatio-Temporal_Understanding_in_Large_Vision-Language_Models_through_CVPR_2026_paper.pdf">PDF</a>
+            <a class="button" href="https://huggingface.co/collections/justachetan/flat-pack-bench">Data</a>
+            <a class="button" href="#dataset">Viewer</a>
+            <a class="button" href="#results">Results</a>
+            <a class="button" href="#citation">Citation</a>
           </div>
         </div>
+        <figure class="demo-figure refined-demo">
+          <video
+            controls
+            playsinline
+            preload="metadata"
+            poster="assets/supplementary/sep/FoVtnbm0hPc_001.jpg"
+          >
+            <source src="assets/supplementary/sectiond/walkthrough_FoVtnbm0hPc.mp4" type="video/mp4">
+          </video>
+          <figcaption>Demo video appears in the hero instead of below the dataset sections.</figcaption>
+        </figure>
       </div>
     </header>
 
-    <main class="page">
+    <main class="page refined-page">
       <aside class="toc" aria-label="Table of contents">
         <p>Contents</p>
         <a href="#overview">Overview</a>
@@ -153,16 +131,6 @@
               <h3>Tracking</h3>
               <p>Match labeled parts across two states, requiring object identity through occlusion and motion.</p>
             </article>
-          </div>
-          <div class="split single">
-            <div>
-              <h3>Prompt construction</h3>
-              <p>
-                Questions combine a video with visual prompts that label the relevant parts.
-                Non-tracking questions use one annotated image, while tracking questions use
-                an Image A to Image B correspondence prompt.
-              </p>
-            </div>
           </div>
         </section>
 
@@ -354,7 +322,6 @@
       </figure>
     </div>
 
-    <script type="module" src="assets/js/hero-teaser.js?v=20260518-1"></script>
     <script type="module" src="assets/js/app.js?v=20260428-2"></script>
   </body>
 </html>

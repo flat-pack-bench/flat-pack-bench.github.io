@@ -1,0 +1,125 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta
+      name="description"
+      content="Minimal Flat-Pack Bench homepage prototype focused on title, abstract, demo video, and resource links."
+    >
+    <title>Flat-Pack Bench | Minimal Prototype</title>
+    <link rel="stylesheet" href="assets/css/styles.css?v=20260428-6">
+    <link rel="stylesheet" href="assets/css/homepage-variants.css?v=20260520-1">
+  </head>
+  <body class="variant-page homepage-minimal">
+    <main class="variant-wrap">
+      <nav class="variant-nav" aria-label="Prototype navigation">
+        <a href="homepage-variants.html">All prototypes</a>
+        <a href="index.html">Current site</a>
+      </nav>
+
+      <header class="minimal-hero" id="top">
+        <div class="minimal-copy">
+          <p class="variant-kicker">Flat-Pack Bench</p>
+          <h1>Flat-Pack Bench</h1>
+          <p class="variant-subtitle">
+            Evaluating Spatio-Temporal Understanding in Large Vision-Language Models
+            through Furniture Assembly
+          </p>
+          <p class="variant-authors">
+            Aditya Chetan, Eric Cai, Peeyush Kushwaha, Bharath Raj Nagoor Kani,
+            Utkarsh Mall, Qianqian Wang, Noah Snavely, Bharath Hariharan
+          </p>
+          <p class="variant-status">CVPR 2026</p>
+          <section class="paper-abstract" aria-labelledby="minimal-abstract-heading">
+            <h2 id="minimal-abstract-heading">Abstract</h2>
+            <p>
+              Flat-Pack Bench is a multiple-choice benchmark for fine-grained
+              spatio-temporal video understanding. Each question asks a model to reason
+              about parts, contact events, assembly order, final connectivity, or object
+              identity across time in real furniture assembly videos.
+            </p>
+          </section>
+          <div class="plain-links" aria-label="Project resources">
+            <a href="https://openaccess.thecvf.com/content/CVPR2026/papers/Chetan_Flat-Pack_Bench_Evaluating_Spatio-Temporal_Understanding_in_Large_Vision-Language_Models_through_CVPR_2026_paper.pdf">PDF</a>
+            <a href="https://huggingface.co/collections/justachetan/flat-pack-bench">Data</a>
+            <a href="#dataset">Viewer</a>
+            <a href="#results">Results</a>
+            <a href="#citation">Citation</a>
+          </div>
+        </div>
+        <figure class="demo-figure compact-demo">
+          <video
+            controls
+            playsinline
+            preload="metadata"
+            poster="assets/supplementary/sep/FoVtnbm0hPc_001.jpg"
+          >
+            <source src="assets/supplementary/sectiond/walkthrough_FoVtnbm0hPc.mp4" type="video/mp4">
+          </video>
+          <figcaption>Demo video: an assembly walkthrough used by the benchmark.</figcaption>
+        </figure>
+      </header>
+
+      <section class="compact-section" id="benchmark">
+        <h2>Benchmark</h2>
+        <p>
+          The benchmark contains 602 questions across 50 real assembly videos and
+          four question families: temporal localization, temporal ordering, mating,
+          and tracking.
+        </p>
+        <div class="compact-grid">
+          <article>
+            <strong>Temporal localization</strong>
+            <span>Find first, last, next, or most recent contact events.</span>
+          </article>
+          <article>
+            <strong>Temporal ordering</strong>
+            <span>Recover the order of part and part-pair attachments.</span>
+          </article>
+          <article>
+            <strong>Mating</strong>
+            <span>Determine whether two labeled parts connect in the final assembly.</span>
+          </article>
+          <article>
+            <strong>Tracking</strong>
+            <span>Match labeled parts across states despite motion and occlusion.</span>
+          </article>
+        </div>
+      </section>
+
+      <section class="compact-section" id="dataset">
+        <h2>Dataset Viewer</h2>
+        <p>
+          The full interactive browser is available on the current project page. This
+          prototype keeps the homepage spare and treats the viewer as a secondary path.
+        </p>
+        <div class="plain-links secondary-links">
+          <a href="index.html?viewer=full#dataset">Open full viewer</a>
+          <a href="index.html#overview">Read overview</a>
+        </div>
+      </section>
+
+      <section class="compact-section" id="results">
+        <h2>Headline Results</h2>
+        <div class="result-strip">
+          <div><span>Human</span><strong>94.18</strong></div>
+          <div><span>Best open model</span><strong>41.03</strong></div>
+          <div><span>Best closed model</span><strong>37.71</strong></div>
+        </div>
+      </section>
+
+      <section class="compact-section" id="citation">
+        <h2>Citation</h2>
+        <pre class="variant-bibtex"><code>@InProceedings{Chetan_2026_CVPR,
+    author    = {Chetan, Aditya and Cai, Eric and Kushwaha, Peeyush and Kani, Bharath Raj Nagoor and Mall, Utkarsh and Wang, Qianqian and Snavely, Noah and Hariharan, Bharath},
+    title     = {Flat-Pack Bench: Evaluating Spatio-Temporal Understanding in Large Vision-Language Models through Furniture Assembly},
+    booktitle = {Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR)},
+    month     = {June},
+    year      = {2026},
+    pages     = {16624-16634}
+}</code></pre>
+      </section>
+    </main>
+  </body>
+</html>

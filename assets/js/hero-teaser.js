@@ -26,6 +26,10 @@ function initHeroTeaser(container) {
   const camera = new THREE.PerspectiveCamera(34, 1, 0.1, 100);
   camera.position.set(2.65, 1.82, 4.45);
   camera.lookAt(0.08, 1.16, 0.18);
+  const baseProjectionMatrix = new THREE.Matrix4();
+  const baseProjectionMatrixInverse = new THREE.Matrix4();
+  const overscanProjectionMatrix = new THREE.Matrix4();
+  const overscanProjectionMatrixInverse = new THREE.Matrix4();
 
   const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
   renderer.setClearColor(0x000000, 0);
@@ -35,6 +39,7 @@ function initHeroTeaser(container) {
   renderer.outputColorSpace = THREE.SRGBColorSpace;
   renderer.toneMapping = THREE.ACESFilmicToneMapping;
   renderer.toneMappingExposure = 1.02;
+  renderer.autoClear = false;
   container.appendChild(renderer.domElement);
 
   const clock = new THREE.Clock();
@@ -103,7 +108,7 @@ function initHeroTeaser(container) {
 
   function addSurface() {
     const shadow = makeMesh(
-      new THREE.PlaneGeometry(4.8, 2.35),
+      new THREE.PlaneGeometry(80, 64),
       materials.shadow,
       new THREE.Vector3(0.42, 0.02, 0.3),
       { x: -Math.PI / 2 },
@@ -205,12 +210,13 @@ function initHeroTeaser(container) {
     const key = new THREE.DirectionalLight(colors.paperStrong, 1.6);
     key.position.set(-2.2, 4.3, 3.2);
     key.castShadow = true;
-    key.shadow.mapSize.width = 1024;
-    key.shadow.mapSize.height = 1024;
-    key.shadow.camera.left = -3.5;
-    key.shadow.camera.right = 3.5;
-    key.shadow.camera.top = 3.2;
-    key.shadow.camera.bottom = -1.2;
+    key.shadow.mapSize.width = 2048;
+    key.shadow.mapSize.height = 2048;
+    key.shadow.camera.left = -32;
+    key.shadow.camera.right = 32;
+    key.shadow.camera.top = 24;
+    key.shadow.camera.bottom = -32;
+    key.shadow.camera.updateProjectionMatrix();
     scene.add(key);
 
     const screenLight = new THREE.PointLight("#86dbe4", 0.9, 3.8, 1.8);
@@ -548,7 +554,7 @@ function initHeroTeaser(container) {
 
     screenCtx.save();
     screenCtx.globalAlpha = 0.78 * screenContentAlpha;
-    const progress = t / LOOP_DURATION;
+    const progress = clamp(t / OUTRO_END);
     roundedRect(screenCtx, 92, height - 52, width - 184, 8, 4);
     screenCtx.fillStyle = "rgba(255, 250, 240, 0.18)";
     screenCtx.fill();
@@ -566,14 +572,132 @@ function initHeroTeaser(container) {
   const robot = addRobot();
   const thoughtBubble = addThoughtBubble();
   const lights = addLighting();
+  let renderViewport = {
+    useOverscan: false,
+    left: 0,
+    bottom: 0,
+    width: 1,
+    height: 1,
+    renderWidth: 1,
+    renderHeight: 1,
+  };
+
+  function extendProjectionIntoOverscan(baseWidth, baseHeight, renderWidth, renderHeight, leftOverscan, topOverscan) {
+    if (renderWidth === baseWidth && renderHeight === baseHeight) return;
+
+    const xScale = baseWidth / renderWidth;
+    const yScale = baseHeight / renderHeight;
+    const xShift = (baseWidth + 2 * leftOverscan - renderWidth) / renderWidth;
+    const yShift = (renderHeight - baseHeight - 2 * topOverscan) / renderHeight;
+    const elements = camera.projectionMatrix.elements;
+    const rowOne = [elements[0], elements[4], elements[8], elements[12]];
+    const rowTwo = [elements[1], elements[5], elements[9], elements[13]];
+    const rowFour = [elements[3], elements[7], elements[11], elements[15]];
+
+    [0, 4, 8, 12].forEach((index, offset) => {
+      elements[index] = xScale * rowOne[offset] + xShift * rowFour[offset];
+    });
+    [1, 5, 9, 13].forEach((index, offset) => {
+      elements[index] = yScale * rowTwo[offset] + yShift * rowFour[offset];
+    });
+    camera.projectionMatrixInverse.copy(camera.projectionMatrix).invert();
+  }
 
   function resize() {
     const bounds = container.getBoundingClientRect();
     const width = Math.max(1, Math.round(bounds.width));
     const height = Math.max(1, Math.round(bounds.height));
+    const hero = document.querySelector(".vsi-hero");
+    const useBannerOverscan = document.body.classList.contains("homepage-vsi-banner") && hero;
+    const heroBounds = useBannerOverscan ? hero.getBoundingClientRect() : null;
+    const leftOverscan = useBannerOverscan ? Math.max(0, Math.ceil(bounds.left - heroBounds.left)) : 0;
+    const topOverscan = useBannerOverscan ? Math.max(0, Math.ceil(bounds.top - heroBounds.top)) : 0;
+    const rightOverscan = useBannerOverscan ? Math.max(0, Math.ceil(heroBounds.right - bounds.right)) : 0;
+    const bottomOverscan = useBannerOverscan ? Math.max(0, Math.ceil(heroBounds.bottom - bounds.bottom)) : 0;
+    const renderWidth = width + leftOverscan + rightOverscan;
+    const renderHeight = height + topOverscan + bottomOverscan;
+    renderViewport = {
+      useOverscan: useBannerOverscan,
+      left: leftOverscan,
+      bottom: bottomOverscan,
+      width,
+      height,
+      renderWidth,
+      renderHeight,
+    };
+
     camera.aspect = width / height;
     camera.updateProjectionMatrix();
-    renderer.setSize(width, height, false);
+    baseProjectionMatrix.copy(camera.projectionMatrix);
+    baseProjectionMatrixInverse.copy(camera.projectionMatrixInverse);
+    extendProjectionIntoOverscan(width, height, renderWidth, renderHeight, leftOverscan, topOverscan);
+    overscanProjectionMatrix.copy(camera.projectionMatrix);
+    overscanProjectionMatrixInverse.copy(camera.projectionMatrixInverse);
+    camera.projectionMatrix.copy(baseProjectionMatrix);
+    camera.projectionMatrixInverse.copy(baseProjectionMatrixInverse);
+    renderer.setSize(renderWidth, renderHeight, false);
+    renderer.domElement.style.position = "absolute";
+    renderer.domElement.style.left = `${-leftOverscan}px`;
+    renderer.domElement.style.top = `${-topOverscan}px`;
+    renderer.domElement.style.width = `${renderWidth}px`;
+    renderer.domElement.style.height = `${renderHeight}px`;
+    renderer.domElement.style.maxWidth = "none";
+  }
+
+  function useProjection(matrix, inverse) {
+    camera.projectionMatrix.copy(matrix);
+    camera.projectionMatrixInverse.copy(inverse);
+  }
+
+  function withOnlyShadowReceiverVisible(callback) {
+    const states = [];
+    const seen = new Set();
+
+    scene.traverse((item) => {
+      if (!item.isMesh || !item.material) return;
+      const materialList = Array.isArray(item.material) ? item.material : [item.material];
+      materialList.forEach((material) => {
+        if (!material || material === materials.shadow || seen.has(material)) return;
+        seen.add(material);
+        states.push([material, material.colorWrite, material.depthWrite]);
+        material.colorWrite = false;
+        material.depthWrite = false;
+      });
+    });
+
+    callback();
+
+    states.forEach(([material, colorWrite, depthWrite]) => {
+      material.colorWrite = colorWrite;
+      material.depthWrite = depthWrite;
+    });
+  }
+
+  function renderScene() {
+    renderer.setScissorTest(false);
+    renderer.setViewport(0, 0, renderViewport.renderWidth, renderViewport.renderHeight);
+    renderer.clear(true, true, true);
+
+    if (!renderViewport.useOverscan) {
+      useProjection(baseProjectionMatrix, baseProjectionMatrixInverse);
+      renderer.render(scene, camera);
+      return;
+    }
+
+    useProjection(overscanProjectionMatrix, overscanProjectionMatrixInverse);
+    withOnlyShadowReceiverVisible(() => {
+      renderer.render(scene, camera);
+    });
+
+    renderer.clearDepth();
+    renderer.setScissorTest(true);
+    renderer.setViewport(renderViewport.left, renderViewport.bottom, renderViewport.width, renderViewport.height);
+    renderer.setScissor(renderViewport.left, renderViewport.bottom, renderViewport.width, renderViewport.height);
+    renderer.clear(true, true, true);
+    useProjection(baseProjectionMatrix, baseProjectionMatrixInverse);
+    renderer.render(scene, camera);
+    renderer.setScissorTest(false);
+    renderer.setViewport(0, 0, renderViewport.renderWidth, renderViewport.renderHeight);
   }
 
   function renderFrame() {
@@ -605,7 +729,7 @@ function initHeroTeaser(container) {
     const camSway = Math.sin(elapsed * 0.18) * 0.035;
     camera.position.x = 2.65 + camSway;
     camera.lookAt(0.08, 1.16, 0.18);
-    renderer.render(scene, camera);
+    renderScene();
   }
 
   function animate() {

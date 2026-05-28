@@ -27,6 +27,7 @@ const CATEGORY_META = {
 const REVEAL_STORAGE_KEY = "flatpack:showGroundTruthAndResponses";
 const REVEAL_SHOW_LABEL = "Click to see the ground-truth and model responses!";
 const REVEAL_HIDE_LABEL = "Hide the ground-truth and model responses";
+const VISUAL_PROMPT_FORMATS = ["sep", "collage", "concat"];
 const RESULT_FILTER_LABELS = {
   model: "Model",
   prompt: "Prompt",
@@ -45,6 +46,11 @@ const state = {
   results: [],
   viewerMode: "curated",
   exampleIndex: 0,
+  vsiGameIndex: 0,
+  vsiGameSelections: {},
+  vsiGameRevealed: false,
+  visualPromptIndex: 0,
+  visualPromptFormat: "sep",
   datasetVideoMode: "keyframe",
   currentQid: "",
   filteredQuestions: [],
@@ -105,10 +111,13 @@ async function init() {
   state.showGroundTruthAndResponses = readRevealPreference();
 
   renderBenchmarkStats();
+  setupVsiGame();
   setupDatasetViewer();
   setupResultsTable();
   renderSupplementaryExplorers();
+  setupVisualPromptHashDeepLink();
   setupGlobalEvents();
+  setupTrackingPromptResize();
   syncRevealControls();
 }
 
@@ -127,40 +136,45 @@ async function loadJsonOptional(path, fallback) {
 }
 
 function setupAffiliationHover() {
-  const heroCopy = $(".hero-copy");
-  if (!heroCopy) return;
+  const hoverRegions = $$(".hero-copy, .vsi-byline").filter(
+    (region) => $(".authors", region) && $(".affiliation-logos", region),
+  );
+  if (hoverRegions.length === 0) return;
 
   const affiliations = ["cornell", "mbzuai", "ucb"];
-  const activate = (affiliation, source) => {
-    heroCopy.dataset.activeAffiliation = affiliation;
-    heroCopy.dataset.hoverSource = source;
-  };
-  const clear = (affiliation, source) => {
-    if (
-      heroCopy.dataset.activeAffiliation === affiliation &&
-      heroCopy.dataset.hoverSource === source
-    ) {
-      delete heroCopy.dataset.activeAffiliation;
-      delete heroCopy.dataset.hoverSource;
-    }
-  };
 
-  affiliations.forEach((affiliation) => {
-    const authors = $$(`.authors .affiliation-${affiliation}`, heroCopy);
-    const logos = $$(`.affiliation-logos > .affiliation-${affiliation}`, heroCopy);
+  hoverRegions.forEach((region) => {
+    const activate = (affiliation, source) => {
+      region.dataset.activeAffiliation = affiliation;
+      region.dataset.hoverSource = source;
+    };
+    const clear = (affiliation, source) => {
+      if (
+        region.dataset.activeAffiliation === affiliation &&
+        region.dataset.hoverSource === source
+      ) {
+        delete region.dataset.activeAffiliation;
+        delete region.dataset.hoverSource;
+      }
+    };
 
-    authors.forEach((author) => {
-      author.addEventListener("pointerenter", () => activate(affiliation, "author"));
-      author.addEventListener("pointerleave", () => clear(affiliation, "author"));
-      author.addEventListener("focus", () => activate(affiliation, "author"));
-      author.addEventListener("blur", () => clear(affiliation, "author"));
-    });
+    affiliations.forEach((affiliation) => {
+      const authors = $$(`.authors .affiliation-${affiliation}`, region);
+      const logos = $$(`.affiliation-logos > .affiliation-${affiliation}`, region);
 
-    logos.forEach((logo) => {
-      logo.addEventListener("pointerenter", () => activate(affiliation, "logo"));
-      logo.addEventListener("pointerleave", () => clear(affiliation, "logo"));
-      logo.addEventListener("focus", () => activate(affiliation, "logo"));
-      logo.addEventListener("blur", () => clear(affiliation, "logo"));
+      authors.forEach((author) => {
+        author.addEventListener("pointerenter", () => activate(affiliation, "author"));
+        author.addEventListener("pointerleave", () => clear(affiliation, "author"));
+        author.addEventListener("focus", () => activate(affiliation, "author"));
+        author.addEventListener("blur", () => clear(affiliation, "author"));
+      });
+
+      logos.forEach((logo) => {
+        logo.addEventListener("pointerenter", () => activate(affiliation, "logo"));
+        logo.addEventListener("pointerleave", () => clear(affiliation, "logo"));
+        logo.addEventListener("focus", () => activate(affiliation, "logo"));
+        logo.addEventListener("blur", () => clear(affiliation, "logo"));
+      });
     });
   });
 }
@@ -206,6 +220,314 @@ function renderCategoryLegend(selector) {
       </span>
     `)
     .join("");
+}
+
+function setupVsiGame() {
+  const game = $("#vsi-game");
+  if (!game) return;
+
+  const tabs = $("#vsi-game-tabs", game);
+  const detail = $("#vsi-game-detail", game);
+  if (!tabs || !detail) return;
+
+  if (state.examples.length === 0) {
+    detail.innerHTML = `<div class="empty-state">Curated examples are unavailable.</div>`;
+    return;
+  }
+
+  renderVsiGameTabs();
+  renderVsiGameDetail();
+
+  tabs.addEventListener("click", (event) => {
+    const button = event.target.closest("[data-vsi-game-index]");
+    if (!button) return;
+    selectVsiGameIndex(Number(button.dataset.vsiGameIndex));
+  });
+
+  tabs.addEventListener("keydown", (event) => {
+    handleVsiGameNavigationKey(event, { focusTab: true });
+  });
+
+  detail.addEventListener("click", (event) => {
+    const option = event.target.closest("[data-vsi-game-option]");
+    if (option) {
+      const entry = state.examples[state.vsiGameIndex];
+      const qid = entry?.question?.qid_flat;
+      if (qid) {
+        state.vsiGameSelections[qid] = option.dataset.vsiGameOption;
+        syncVsiGameAnswerState();
+      }
+      return;
+    }
+
+    const reveal = event.target.closest("[data-vsi-game-reveal]");
+    if (reveal) {
+      const entry = state.examples[state.vsiGameIndex];
+      const selected = entry?.question?.qid_flat ? state.vsiGameSelections[entry.question.qid_flat] : "";
+      if (!selected) return;
+      state.vsiGameRevealed = !state.vsiGameRevealed;
+      syncVsiGameAnswerState();
+    }
+  });
+}
+
+function selectVsiGameIndex(index, options = {}) {
+  if (!state.examples.length) return;
+
+  const count = state.examples.length;
+  const nextIndex = ((index % count) + count) % count;
+  state.vsiGameIndex = nextIndex;
+  state.vsiGameRevealed = false;
+  renderVsiGameTabs();
+  renderVsiGameDetail();
+
+  if (options.focusTab) {
+    requestAnimationFrame(() => {
+      const activeTab = $(`#vsi-game-tabs [data-vsi-game-index="${state.vsiGameIndex}"]`);
+      activeTab?.focus({ preventScroll: true });
+    });
+  }
+}
+
+function handleVsiGameNavigationKey(event, options = {}) {
+  const action = vsiGameNavigationAction(event.key);
+  if (action === null) return false;
+
+  event.preventDefault();
+  event.stopPropagation();
+  if (action === "first") {
+    selectVsiGameIndex(0, options);
+  } else if (action === "last") {
+    selectVsiGameIndex(state.examples.length - 1, options);
+  } else {
+    selectVsiGameIndex(state.vsiGameIndex + action, options);
+  }
+  return true;
+}
+
+function vsiGameNavigationAction(key) {
+  if (["ArrowRight", "ArrowDown", "j", "J"].includes(key)) return 1;
+  if (["ArrowLeft", "ArrowUp", "k", "K"].includes(key)) return -1;
+  if (key === "Home") return "first";
+  if (key === "End") return "last";
+  return null;
+}
+
+function renderVsiGameTabs() {
+  const tabs = $("#vsi-game-tabs");
+  if (!tabs) return;
+
+  tabs.innerHTML = state.examples
+    .map((entry, index) => {
+      const q = entry.question;
+      const promptSpecs = supplementaryPromptSpecs(q, "assets/supplementary/sep");
+      const thumb = promptSpecs.find((spec) => spec.src) || promptSpecs[0];
+      const meta = CATEGORY_META[q.question_category] || {};
+      const isActive = index === state.vsiGameIndex;
+      const label = `Example ${pad(index + 1)} / ${meta.short || categoryShort(q.question_category)}`;
+      return `
+        <button
+          type="button"
+          role="tab"
+          aria-label="${escapeHtml(label)} ${escapeHtml(exampleCaption(q))}"
+          aria-selected="${String(isActive)}"
+          aria-controls="vsi-game-detail"
+          tabindex="${isActive ? "0" : "-1"}"
+          data-vsi-game-index="${index}"
+          class="vsi-game-thumb ${isActive ? "active" : ""} ${escapeHtml(meta.className || "")}"
+        >
+          <span class="vsi-game-thumb-image">
+            ${thumb?.src ? `<img src="${escapeHtml(thumb.src)}" alt="">` : ""}
+          </span>
+        </button>
+      `;
+    })
+    .join("");
+}
+
+function renderVsiGameDetail() {
+  const detail = $("#vsi-game-detail");
+  if (!detail) return;
+
+  const entry = state.examples[state.vsiGameIndex];
+  if (!entry) {
+    detail.innerHTML = `<div class="empty-state">Select a curated example to inspect it.</div>`;
+    return;
+  }
+
+  const q = entry.question;
+  const meta = CATEGORY_META[q.question_category] || {};
+  const promptSpecs = supplementaryPromptSpecs(q, "assets/supplementary/sep");
+  const videoSrc = supplementaryVideo("sep", entry.video_id, "trimmed");
+  const selected = state.vsiGameSelections[q.qid_flat] || "";
+  const canReveal = Boolean(selected);
+
+  detail.innerHTML = `
+    <div class="vsi-game-panel dataset-detail-stack">
+      ${renderVsiGameMedia(q, videoSrc, promptSpecs)}
+      <div class="question-card">
+        <div class="question-card-top">
+          <div class="question-meta">
+            <span class="tag ${escapeHtml(meta.className || "")}">${escapeHtml(meta.short || q.question_category)}</span>
+          </div>
+          <div class="reveal-control">
+            <button
+              class="reveal-toggle vsi-game-reveal"
+              type="button"
+              data-vsi-game-reveal
+              aria-expanded="${String(state.vsiGameRevealed)}"
+              ${canReveal ? "" : "disabled"}
+            >${vsiGameRevealLabel(canReveal)}</button>
+          </div>
+        </div>
+        <h3>Example ${pad(state.vsiGameIndex + 1)}</h3>
+        <p class="question-text">${escapeHtml(q.question.raw_qstr)}</p>
+        ${renderVsiGameOptions(q, selected)}
+      </div>
+      <div class="vsi-game-answer-slot" id="vsi-game-answer-slot" ${state.vsiGameRevealed ? "" : "hidden"}>
+        ${state.vsiGameRevealed ? renderVsiGameAnswer(entry, q) : ""}
+      </div>
+    </div>
+  `;
+
+  scheduleTrackingPromptHeights(detail);
+}
+
+function renderVsiGameMedia(q, videoSrc, promptSpecs) {
+  const sourceTags = `<source src="${escapeHtml(videoSrc)}" type="video/mp4">`;
+  const videoCell = `
+    <div class="viewer-media-cell viewer-video-cell">
+      <video class="dataset-video" controls playsinline preload="metadata">${sourceTags}</video>
+      <p class="media-hint">Trimmed video</p>
+    </div>
+  `;
+  const specs = promptSpecs && promptSpecs.length ? promptSpecs : [{ label: "Visual Prompt", available: false }];
+  const promptCells = specs
+    .map((spec) => renderPromptMediaCell(spec))
+    .join("");
+
+  if (specs.length > 1) {
+    return `
+      <div class="viewer-media-tracking dataset-media" style="--prompt-count: ${specs.length};">
+        ${videoCell}
+        ${renderPromptStackCell(specs)}
+      </div>
+    `;
+  }
+
+  return `
+    <div class="viewer-media-row dataset-media">
+      ${videoCell}
+      ${promptCells}
+    </div>
+  `;
+}
+
+function renderVsiGameOptions(q, selected) {
+  const correct = q.question.correct_option || {};
+  const options = Object.entries(q.question.options || {}).sort(([a], [b]) => Number(a) - Number(b));
+  return `
+    <ul class="vsi-game-options" role="radiogroup" aria-label="Answer options">
+      ${options
+        .map(([key, option]) => {
+          const label = option.label || key;
+          const isSelected = selected === label;
+          const isCorrect = Number(key) === Number(correct.idx) || label === correct.label;
+          const resultClass = state.vsiGameRevealed && isCorrect
+            ? " is-correct"
+            : state.vsiGameRevealed && isSelected
+              ? " is-incorrect"
+              : "";
+          return `
+            <li>
+              <button
+                type="button"
+                role="radio"
+                aria-checked="${String(isSelected)}"
+                data-vsi-game-option="${escapeHtml(label)}"
+                class="${isSelected ? "is-selected" : ""}${resultClass}"
+              >
+                <strong>${escapeHtml(label)}.</strong>
+                <span>${escapeHtml(option.text || option.full_text || "")}</span>
+              </button>
+            </li>
+          `;
+        })
+        .join("")}
+    </ul>
+  `;
+}
+
+function syncVsiGameAnswerState() {
+  const entry = state.examples[state.vsiGameIndex];
+  const q = entry?.question;
+  if (!entry || !q) return;
+
+  const selected = state.vsiGameSelections[q.qid_flat] || "";
+  const correct = q.question.correct_option || {};
+
+  $$("#vsi-game-detail [data-vsi-game-option]").forEach((button) => {
+    const label = button.dataset.vsiGameOption;
+    const isSelected = selected === label;
+    const isCorrect = label === correct.label;
+    button.setAttribute("aria-checked", String(isSelected));
+    button.classList.toggle("is-selected", isSelected);
+    button.classList.toggle("is-correct", state.vsiGameRevealed && isCorrect);
+    button.classList.toggle("is-incorrect", state.vsiGameRevealed && isSelected && !isCorrect);
+  });
+
+  const reveal = $("#vsi-game-detail [data-vsi-game-reveal]");
+  if (reveal) {
+    const canReveal = Boolean(selected);
+    reveal.disabled = !canReveal;
+    reveal.setAttribute("aria-expanded", String(state.vsiGameRevealed));
+    reveal.textContent = vsiGameRevealLabel(canReveal);
+  }
+
+  const answerSlot = $("#vsi-game-answer-slot");
+  if (answerSlot) {
+    answerSlot.hidden = !state.vsiGameRevealed;
+    answerSlot.innerHTML = state.vsiGameRevealed ? renderVsiGameAnswer(entry, q) : "";
+  }
+}
+
+function renderVsiGameAnswer(entry, q) {
+  const modelRows = state.modelResponses.responsesByQuestion?.[q.qid_flat] || [];
+  const rows = modelRows.length ? modelRows : flattenResponses(entry.responses);
+  const correct = q.question?.correct_option || {};
+  const correctText = correct.full_text || `${correct.label}. ${correct.text || ""}`.trim();
+
+  return `
+    <section class="model-response-section vsi-game-answer" aria-label="Challenge answer">
+      <h3>Ground truth and LVLM answers</h3>
+      <p class="vsi-game-ground-truth"><strong>Ground truth:</strong> ${escapeHtml(correctText)}</p>
+      ${rows.length ? `
+        <div class="response-grid">
+          ${rows.map((response) => renderVsiGameResponseCard(response, q)).join("")}
+        </div>
+      ` : `<div class="empty-state">No model responses available for this example.</div>`}
+    </section>
+  `;
+}
+
+function renderVsiGameResponseCard(response, q) {
+  const correct = q.question?.correct_option?.label;
+  const verdict = typeof response.correct === "boolean"
+    ? (response.correct ? "correct" : "incorrect")
+    : (correct && response.answer ? (response.answer === correct ? "correct" : "incorrect") : "");
+  const thoughts = response.thoughts?.length ? `\n\n${response.thoughts.join("\n\n")}` : "";
+  const setting = response.settingLabel || `${response.video || ""} / ${response.prompt || ""}`.trim();
+  return `
+    <article class="response-card">
+      <strong>${escapeHtml(response.model)}</strong>
+      <p>${escapeHtml(setting)}</p>
+      ${renderAnswerBadge(response.answer, verdict)}
+      <details>
+        <summary>Response</summary>
+        <pre class="response-text">${escapeHtml(`${response.raw || ""}${thoughts}`.trim())}</pre>
+      </details>
+    </article>
+  `;
 }
 
 function setupCuratedControls() {
@@ -271,7 +593,10 @@ function renderCuratedDetail() {
 }
 
 function setupDatasetViewer() {
-  setupCuratedControls();
+  const hasCuratedViewer = Boolean($("#curated-sample-view") && $("#example-tabs"));
+  if (hasCuratedViewer) {
+    setupCuratedControls();
+  }
   renderCategoryLegend("#dataset-legend");
   populateSelect("#category-filter", unique(state.questions.map((q) => q.question_category)), "All categories", categoryLabel);
   populateSelect("#template-filter", unique(state.questions.map((q) => q.template_type)), "All templates");
@@ -316,7 +641,7 @@ function setupDatasetViewer() {
     state.viewerMode = "full";
   } else {
     state.currentQid = state.questions[0]?.qid_flat || "";
-    state.viewerMode = viewer === "full" ? "full" : "curated";
+    state.viewerMode = viewer === "full" || !hasCuratedViewer ? "full" : "curated";
   }
 
   applyDatasetFilters();
@@ -330,7 +655,8 @@ function setupDatasetViewer() {
 }
 
 function setViewerMode(mode, options = {}) {
-  state.viewerMode = mode === "full" ? "full" : "curated";
+  const hasCuratedViewer = Boolean($("#curated-sample-view") && $("#example-tabs"));
+  state.viewerMode = mode === "full" || !hasCuratedViewer ? "full" : "curated";
   syncViewerMode();
   if (options.pushUrl) {
     const url = new URL(window.location.href);
@@ -347,7 +673,9 @@ function setViewerMode(mode, options = {}) {
 }
 
 function syncViewerMode() {
-  const isFull = state.viewerMode === "full";
+  const hasCuratedViewer = Boolean($("#curated-sample-view") && $("#example-tabs"));
+  const isFull = state.viewerMode === "full" || !hasCuratedViewer;
+  state.viewerMode = isFull ? "full" : "curated";
   $("#curated-sample-view")?.toggleAttribute("hidden", isFull);
   $("#dataset-filters")?.toggleAttribute("hidden", !isFull);
   $("#full-dataset-view")?.toggleAttribute("hidden", !isFull);
@@ -482,6 +810,8 @@ function renderDatasetDetail() {
     </div>
   `;
 
+  scheduleTrackingPromptHeights(detail);
+
   detail.querySelectorAll("[data-step]").forEach((button) => {
     button.addEventListener("click", () => moveDatasetSelection(Number(button.dataset.step)));
     button.disabled = filteredIndex < 0;
@@ -506,15 +836,16 @@ function renderDatasetMedia(q, videoInput, promptSpecs) {
       </div>
     `;
 
-  const promptCells = (promptSpecs && promptSpecs.length ? promptSpecs : [{ label: "Visual Prompt", available: false }])
+  const specs = promptSpecs && promptSpecs.length ? promptSpecs : [{ label: "Visual Prompt", available: false }];
+  const promptCells = specs
     .map((spec) => renderPromptMediaCell(spec))
     .join("");
 
-  if (promptSpecs.length > 1) {
+  if (specs.length > 1) {
     return `
-      <div class="viewer-media-stack dataset-media">
+      <div class="viewer-media-tracking dataset-media" style="--prompt-count: ${specs.length};">
         ${videoCell}
-        <div class="viewer-media-images">${promptCells}</div>
+        ${renderPromptStackCell(specs)}
       </div>
     `;
   }
@@ -579,6 +910,80 @@ function renderPromptMediaCell(spec) {
   `;
 }
 
+function renderPromptStackCell(promptSpecs) {
+  const specs = promptSpecs && promptSpecs.length ? promptSpecs : [{ label: "Visual Prompt", available: false }];
+  return `
+    <div class="viewer-media-cell viewer-prompt-stack-cell">
+      <div class="viewer-media-image-stack" style="--prompt-count: ${specs.length};">
+        ${specs.map((spec) => renderPromptStackTile(spec)).join("")}
+      </div>
+    </div>
+  `;
+}
+
+function renderPromptStackTile(spec) {
+  const label = spec.label || "Prompt image";
+  if (!spec.available && spec.available !== undefined) {
+    return `
+      <figure class="viewer-prompt-stack-figure">
+        ${promptFallback(spec)}
+        <figcaption class="media-hint">${escapeHtml(label)}</figcaption>
+      </figure>
+    `;
+  }
+
+  return `
+    <figure class="viewer-prompt-stack-figure">
+      <div class="prompt-tile">
+        <button class="prompt-image-button" type="button" data-overlay-src="${escapeHtml(spec.src)}" data-overlay-label="${escapeHtml(label)}">
+          <img src="${escapeHtml(spec.src)}" alt="${escapeHtml(label)}" data-fallback="${escapeHtml(spec.original || label)}">
+        </button>
+      </div>
+      <figcaption class="media-hint">${escapeHtml(label)}</figcaption>
+    </figure>
+  `;
+}
+
+function setupTrackingPromptResize() {
+  window.addEventListener("resize", () => scheduleTrackingPromptHeights());
+}
+
+function scheduleTrackingPromptHeights(root = document) {
+  requestAnimationFrame(() => syncTrackingPromptHeights(root));
+}
+
+function syncTrackingPromptHeights(root = document) {
+  const layouts = root instanceof Element && root.matches(".viewer-media-tracking")
+    ? [root]
+    : $$(".viewer-media-tracking", root);
+
+  layouts.forEach((layout) => {
+    const media = $(":scope > .viewer-video-cell video, :scope > .viewer-video-cell .missing-video", layout);
+    const stack = $(".viewer-media-image-stack", layout);
+    if (!media || !stack) return;
+
+    const applyHeight = () => {
+      if (window.matchMedia("(max-width: 700px)").matches) {
+        stack.style.height = "";
+        return;
+      }
+      const height = media.getBoundingClientRect().height;
+      if (height > 0) {
+        stack.style.height = `${Math.round(height)}px`;
+      }
+    };
+
+    applyHeight();
+
+    if (!layout.dataset.promptHeightBound && media instanceof HTMLVideoElement) {
+      ["loadedmetadata", "loadeddata", "resize"].forEach((eventName) => {
+        media.addEventListener(eventName, applyHeight);
+      });
+      layout.dataset.promptHeightBound = "true";
+    }
+  });
+}
+
 function moveDatasetSelection(step) {
   if (state.filteredQuestions.length === 0) return;
   const index = state.filteredQuestions.findIndex((q) => q.qid_flat === state.currentQid);
@@ -601,6 +1006,16 @@ function isDatasetViewerKeyboardContext() {
 
   const rect = viewer.getBoundingClientRect();
   return rect.top < window.innerHeight && rect.bottom > 0;
+}
+
+function isVsiGameKeyboardContext() {
+  const game = $("#vsi-game");
+  if (!game) return false;
+  if (game.contains(document.activeElement)) return true;
+
+  const rect = game.getBoundingClientRect();
+  const visibleHeight = Math.min(rect.bottom, window.innerHeight) - Math.max(rect.top, 0);
+  return visibleHeight >= Math.min(240, rect.height * 0.25);
 }
 
 function setupResultsTable() {
@@ -798,27 +1213,207 @@ function renderSupplementaryExplorers() {
 function renderVisualPromptExamples() {
   const container = $("#visual-prompt-examples");
   if (!container) return;
-  container.innerHTML = state.visualPrompts
-    .map((entry) => {
-      const q = entry.question;
-      const videos = ["sep", "collage", "concat"]
-        .map((kind) => `
-          <div>
-            <span class="pill">${kind}</span>
-            <video src="${escapeHtml(supplementaryVideo(kind, entry.video_id, "keyframe", "sectionb"))}" controls playsinline preload="metadata"></video>
-          </div>
-        `)
-        .join("");
+
+  if (state.visualPrompts.length === 0) {
+    container.innerHTML = `<div class="empty-state">Visual prompt examples are unavailable.</div>`;
+    return;
+  }
+
+  state.visualPromptIndex = clamp(state.visualPromptIndex, 0, state.visualPrompts.length - 1);
+  container.innerHTML = `
+    <div class="prompt-type-browser">
+      <div class="detail-nav prompt-type-nav">
+        <button class="nav-button" type="button" data-visual-prompt-step="-1">Previous</button>
+        <span class="results-meta">Question ${pad(state.visualPromptIndex + 1)} of ${pad(state.visualPrompts.length)}</span>
+        <button class="nav-button" type="button" data-visual-prompt-step="1">Next</button>
+      </div>
+      <div class="segmented prompt-type-rail" role="tablist" aria-label="Visual prompt examples">
+        ${state.visualPrompts
+          .map((entry, index) => {
+            const q = entry.question;
+            const meta = CATEGORY_META[q.question_category] || {};
+            const active = index === state.visualPromptIndex;
+            return `
+              <button
+                type="button"
+                role="tab"
+                aria-selected="${String(active)}"
+                data-visual-prompt-index="${index}"
+                class="${active ? "active" : ""} ${escapeHtml(meta.className || "")}"
+                title="${escapeHtml(categoryShort(q.question_category))}"
+              >${pad(index + 1)}</button>
+            `;
+          })
+          .join("")}
+      </div>
+      <div id="visual-prompt-example-detail">
+        ${renderVisualPromptExampleDetail(state.visualPrompts[state.visualPromptIndex], state.visualPromptIndex)}
+      </div>
+    </div>
+  `;
+
+  container.querySelectorAll("[data-visual-prompt-step]").forEach((button) => {
+    button.addEventListener("click", () => moveVisualPromptExample(Number(button.dataset.visualPromptStep)));
+  });
+  container.querySelectorAll("[data-visual-prompt-index]").forEach((button) => {
+    button.addEventListener("click", () => selectVisualPromptExample(Number(button.dataset.visualPromptIndex)));
+  });
+  container.querySelector("[data-visual-prompt-format]")?.addEventListener("change", (event) => {
+    selectVisualPromptFormat(event.target.value);
+  });
+  scheduleTrackingPromptHeights(container);
+}
+
+function renderVisualPromptExampleDetail(entry, index) {
+  if (!entry) return `<div class="empty-state">Select an example to inspect it.</div>`;
+
+  const q = entry.question;
+  const selectedFormat = currentVisualPromptFormat();
+  const promptSpecs = supplementaryPromptSpecs(q, "assets/supplementary/sectionb/sep");
+
+  return `
+    <div class="dataset-detail-stack">
+      <div class="prompt-format-control">
+        <label>
+          Prompt format
+          <select data-visual-prompt-format>
+            ${VISUAL_PROMPT_FORMATS
+              .map((format) => `
+                <option value="${escapeHtml(format)}" ${format === selectedFormat ? "selected" : ""}>
+                  ${escapeHtml(promptKindLabel(format))}
+                </option>
+              `)
+              .join("")}
+          </select>
+        </label>
+        <div class="prompt-format-notes">
+          <p class="media-hint">${escapeHtml(promptKindDescription(selectedFormat))}</p>
+          <p class="media-hint">All videos in this viewer are key-frame videos.</p>
+        </div>
+      </div>
+      ${renderSelectedVisualPromptMedia(entry, selectedFormat, promptSpecs)}
+      ${renderQuestion(q, { title: `Prompt question ${index + 1}`, includeIndex: false, includeReveal: false, showCorrectOption: true })}
+      ${renderVisualPromptResponses(entry, selectedFormat)}
+    </div>
+  `;
+}
+
+function renderSelectedVisualPromptMedia(entry, selectedFormat, promptSpecs) {
+  const videoCell = `
+    <div class="viewer-media-cell viewer-video-cell prompt-setting-cell">
+      <video src="${escapeHtml(supplementaryVideo(selectedFormat, entry.video_id, "keyframe", "sectionb"))}" controls playsinline preload="metadata"></video>
+    </div>
+  `;
+
+  if (selectedFormat === "sep") {
+    if (promptSpecs.length > 1) {
       return `
-        <article class="mini-card">
-          <span class="tag ${CATEGORY_META[q.question_category]?.className || ""}">${categoryShort(q.question_category)}</span>
-          <h3>${escapeHtml(q.furniture_name)} / ${escapeHtml(q.video_id)}</h3>
-          <p>${escapeHtml(q.question.raw_qstr)}</p>
-          ${videos}
-        </article>
+        <div class="viewer-media-tracking dataset-media prompt-type-video-row" style="--prompt-count: ${promptSpecs.length};">
+          ${videoCell}
+          ${renderPromptStackCell(promptSpecs)}
+        </div>
       `;
-    })
-    .join("");
+    }
+
+    return `
+      <div class="viewer-media-row dataset-media prompt-type-video-row">
+        ${videoCell}
+        ${promptSpecs.map((spec) => renderPromptMediaCell(spec)).join("")}
+      </div>
+    `;
+  }
+
+  return `
+    <div class="viewer-media-row dataset-media prompt-type-video-row prompt-type-single-media">
+      ${videoCell}
+    </div>
+  `;
+}
+
+function currentVisualPromptFormat() {
+  return VISUAL_PROMPT_FORMATS.includes(state.visualPromptFormat) ? state.visualPromptFormat : "sep";
+}
+
+function selectVisualPromptFormat(format) {
+  if (!VISUAL_PROMPT_FORMATS.includes(format)) return;
+  state.visualPromptFormat = format;
+  renderVisualPromptExamples();
+}
+
+function renderVisualPromptResponses(entry, selectedFormat) {
+  const q = entry.question;
+  const correct = q.question?.correct_option || {};
+  const correctText = correct.full_text || `${correct.label}. ${correct.text || ""}`.trim();
+  const rows = visualPromptResponseRows(entry, selectedFormat);
+
+  return `
+    <section class="model-response-section prompt-response-section" aria-label="Key-frame model responses">
+      <h3>Ground truth and key-frame model responses</h3>
+      <p class="prompt-ground-truth"><strong>Ground truth:</strong> ${escapeHtml(correctText)}</p>
+      ${rows.length ? `
+        <div class="response-grid">
+          ${rows.map((response) => renderVisibleResponseCard(response, q)).join("")}
+        </div>
+      ` : `<div class="empty-state">No key-frame model responses available for this prompt format.</div>`}
+    </section>
+  `;
+}
+
+function visualPromptResponseRows(entry, selectedFormat) {
+  return flattenResponses(entry.responses)
+    .filter((response) => response.video === "keyframe" && response.prompt === selectedFormat)
+    .map((response) => ({
+      ...response,
+      settingLabel: `Key-frame / ${promptKindLabel(selectedFormat)}`,
+    }));
+}
+
+function renderVisibleResponseCard(response, q) {
+  const correct = q.question?.correct_option?.label;
+  const verdict = typeof response.correct === "boolean"
+    ? (response.correct ? "correct" : "incorrect")
+    : (correct && response.answer ? (response.answer === correct ? "correct" : "incorrect") : "");
+  const thoughts = response.thoughts?.length ? `\n\n${response.thoughts.join("\n\n")}` : "";
+  const setting = response.settingLabel || `${response.video || ""} / ${response.prompt || ""}`.trim();
+  return `
+    <article class="response-card">
+      <strong>${escapeHtml(response.model)}</strong>
+      <p>${escapeHtml(setting)}</p>
+      ${renderAnswerBadge(response.answer, verdict)}
+      <details>
+        <summary>Response</summary>
+        <pre class="response-text">${escapeHtml(`${response.raw || ""}${thoughts}`.trim())}</pre>
+      </details>
+    </article>
+  `;
+}
+
+function selectVisualPromptExample(index) {
+  if (!state.visualPrompts.length) return;
+  state.visualPromptIndex = clamp(index, 0, state.visualPrompts.length - 1);
+  renderVisualPromptExamples();
+}
+
+function moveVisualPromptExample(step) {
+  if (!state.visualPrompts.length) return;
+  const count = state.visualPrompts.length;
+  state.visualPromptIndex = ((state.visualPromptIndex + step) % count + count) % count;
+  renderVisualPromptExamples();
+}
+
+function setupVisualPromptHashDeepLink() {
+  const openVisualPromptViewer = () => {
+    if (window.location.hash !== "#visual-prompts") return;
+    const details = $("#visual-prompts");
+    if (!details) return;
+    details.open = true;
+    requestAnimationFrame(() => {
+      details.scrollIntoView({ block: "start" });
+    });
+  };
+
+  window.addEventListener("hashchange", openVisualPromptViewer);
+  openVisualPromptViewer();
 }
 
 function renderSelfExplanationExamples() {
@@ -867,17 +1462,18 @@ function renderTvaExamples() {
 function renderQuestion(q, options = {}) {
   const meta = CATEGORY_META[q.question_category] || { label: q.question_category, short: q.question_category, className: "" };
   const title = options.title || "Question";
+  const revealControl = options.includeReveal === false ? "" : renderRevealControl();
   return `
     <div class="question-card">
       <div class="question-card-top">
         <div class="question-meta">
           <span class="tag ${meta.className}">${meta.short}</span>
         </div>
-        ${renderRevealControl()}
+        ${revealControl}
       </div>
       <h3>${escapeHtml(title)}</h3>
       <p class="question-text">${escapeHtml(q.question.raw_qstr)}</p>
-      ${renderOptions(q)}
+      ${renderOptions(q, options)}
     </div>
   `;
 }
@@ -892,14 +1488,15 @@ function renderRevealControl() {
   `;
 }
 
-function renderOptions(q) {
+function renderOptions(q, options = {}) {
   const correct = q.question.correct_option || {};
-  const options = Object.entries(q.question.options || {}).sort(([a], [b]) => Number(a) - Number(b));
+  const showCorrect = options.showCorrectOption || state.showGroundTruthAndResponses;
+  const optionEntries = Object.entries(q.question.options || {}).sort(([a], [b]) => Number(a) - Number(b));
   return `
     <ul class="option-list">
-      ${options
+      ${optionEntries
         .map(([key, option]) => {
-          const isCorrect = state.showGroundTruthAndResponses && (Number(key) === Number(correct.idx) || option.label === correct.label);
+          const isCorrect = showCorrect && (Number(key) === Number(correct.idx) || option.label === correct.label);
           return `<li class="${isCorrect ? "correct" : ""}"><strong>${escapeHtml(option.label)}.</strong> ${escapeHtml(option.text || option.full_text || "")}</li>`;
         })
         .join("")}
@@ -1189,8 +1786,12 @@ function setupGlobalEvents() {
       return;
     }
     if (!$("#image-overlay")?.hidden) return;
+    if (event.metaKey || event.ctrlKey || event.altKey) return;
     const tagName = document.activeElement?.tagName;
     if (["INPUT", "SELECT", "TEXTAREA"].includes(tagName)) return;
+    if (isVsiGameKeyboardContext()) {
+      if (handleVsiGameNavigationKey(event, { focusTab: true })) return;
+    }
     if (!isDatasetViewerKeyboardContext()) return;
     const isNextKey = ["ArrowRight", "ArrowDown", "j", "J"].includes(event.key);
     const isPreviousKey = ["ArrowLeft", "ArrowUp", "k", "K"].includes(event.key);
@@ -1253,6 +1854,41 @@ function categoryLabel(category) {
 
 function categoryShort(category) {
   return CATEGORY_META[category]?.short || category;
+}
+
+function promptKindLabel(kind) {
+  return {
+    sep: "Mixed-Media",
+    collage: "Collage",
+    concat: "Concat",
+  }[kind] || kind;
+}
+
+function promptKindDescription(kind) {
+  return {
+    sep: "Prompt image(s) supplied separately from the video.",
+    collage: "Prompt image(s) fixed alongside every video frame.",
+    concat: "Prompt image(s) prepended as initial video frame(s).",
+  }[kind] || "";
+}
+
+function vsiGameRevealLabel(canReveal) {
+  if (!canReveal) return "Select an option";
+  return state.vsiGameRevealed ? "Hide answer" : "Click to view Ground Truth and LVLMs' answers!";
+}
+
+function exampleCaption(q) {
+  const item = titleCase(String(q.furniture_name || "furniture").replace(/_/g, " "));
+  const family = q.vid_category && q.vid_category !== "Misc" ? `${String(q.vid_category).toLowerCase()} ` : "";
+  return `${item} ${family}assembly`;
+}
+
+function titleCase(value) {
+  return String(value)
+    .split(/\s+/)
+    .filter(Boolean)
+    .map((word) => `${word.charAt(0).toUpperCase()}${word.slice(1)}`)
+    .join(" ");
 }
 
 function unique(values) {

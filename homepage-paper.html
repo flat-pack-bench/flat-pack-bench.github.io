@@ -1,0 +1,377 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta
+      name="description"
+      content="Reference-structure Flat-Pack Bench homepage prototype with a paper-style project header, contents, figures, and results."
+    >
+    <title>Flat-Pack Bench | Reference Structure Prototype</title>
+    <link rel="stylesheet" href="assets/css/styles.css?v=20260428-6">
+    <link rel="stylesheet" href="assets/css/homepage-variants.css?v=20260521-1">
+  </head>
+  <body class="variant-page homepage-paper">
+    <div class="paper-shell">
+      <nav class="variant-nav paper-nav" aria-label="Prototype navigation">
+        <a class="variant-mark" href="#top">Flat-Pack Bench</a>
+        <span class="variant-nav-links">
+          <a href="homepage-variants.html">Prototypes</a>
+          <a href="index.html">Current site</a>
+          <a href="#results">Results</a>
+          <a href="#citation">Citation</a>
+        </span>
+      </nav>
+
+      <header class="paper-hero" id="top">
+        <p class="variant-kicker">Furniture assembly as a spatio-temporal stress test</p>
+        <h1>Flat-Pack Bench</h1>
+        <p class="paper-subtitle">
+          Evaluating Spatio-Temporal Understanding in Large Vision-Language Models
+          through Furniture Assembly
+        </p>
+        <p class="paper-hero-summary">
+          Flat-Pack Bench evaluates whether large vision-language models can reason
+          about part identity, contact events, assembly order, and final connectivity
+          across real furniture assembly videos.
+        </p>
+
+        <div class="plain-links paper-actions" aria-label="Project resources">
+          <a href="https://openaccess.thecvf.com/content/CVPR2026/papers/Chetan_Flat-Pack_Bench_Evaluating_Spatio-Temporal_Understanding_in_Large_Vision-Language_Models_through_CVPR_2026_paper.pdf">PDF</a>
+          <a href="https://huggingface.co/collections/justachetan/flat-pack-bench">Data</a>
+          <a href="index.html#dataset">Viewer</a>
+          <a href="index.html#results">Full Results</a>
+          <a href="#citation">BibTeX</a>
+        </div>
+
+        <div class="paper-meta-grid" aria-label="Project metadata">
+          <section>
+            <h2>Authors</h2>
+            <p>
+              <a href="https://justachetan.github.io/">Aditya Chetan</a>,
+              <a href="https://www.linkedin.com/in/ericcai32/">Eric Cai</a>,
+              <a href="https://peey.github.io/">Peeyush Kushwaha</a>,
+              <a href="https://bharathrajn.com/">Bharath Raj Nagoor Kani</a>,
+              <a href="https://utkarshmall.com/">Utkarsh Mall</a>,
+              <a href="https://qianqianwang68.github.io/">Qianqian Wang</a>,
+              <a href="https://www.cs.cornell.edu/~snavely/">Noah Snavely</a>,
+              <a href="https://www.cs.cornell.edu/~bharathh/">Bharath Hariharan</a>
+            </p>
+          </section>
+          <section>
+            <h2>Affiliations</h2>
+            <div class="paper-logo-row" aria-label="Author affiliations">
+              <img src="assets/logos/cornell.svg" alt="Cornell University">
+              <img src="assets/logos/mbzuai.png" alt="MBZUAI">
+              <img src="assets/logos/berkeley.svg" alt="UC Berkeley">
+            </div>
+          </section>
+          <section>
+            <h2>Benchmark</h2>
+            <p>
+              602 multiple-choice questions from 50 real assembly videos across
+              temporal localization, temporal ordering, mating, and tracking.
+            </p>
+          </section>
+        </div>
+      </header>
+
+      <nav class="paper-contents" aria-label="Table of contents">
+        <h2>Contents</h2>
+        <a href="#overview">Overview</a>
+        <a href="#benchmark">Benchmark Design</a>
+        <a href="#visual-prompts">Visual Prompts</a>
+        <a href="#evaluation">Evaluation</a>
+        <a href="#results">Results</a>
+        <a href="#discussion">Discussion</a>
+        <a href="#citation">Citation</a>
+      </nav>
+    </div>
+
+    <main class="paper-main">
+      <section class="paper-section" id="overview">
+        <div class="paper-section-heading">
+          <p class="variant-kicker">Overview</p>
+          <h2>Assembly videos turn everyday furniture into a fine-grained video reasoning test.</h2>
+        </div>
+        <p>
+          Most project pages introduce the benchmark through a short abstract, then
+          move into figures and anchored sections. This variant follows that shape:
+          it keeps the top of the page academic and compact, then lets examples,
+          tables, and results carry the story.
+        </p>
+        <p>
+          The core task is simple to state but hard to solve. Given a video and
+          visual prompts that mark the relevant parts, a model must answer
+          multiple-choice questions about what connects, when it connects, and
+          whether identities remain consistent across time.
+        </p>
+
+        <figure class="paper-figure paper-video-figure">
+          <video
+            controls
+            playsinline
+            preload="metadata"
+            poster="assets/supplementary/sep/FoVtnbm0hPc_001.jpg"
+          >
+            <source src="assets/supplementary/sectiond/walkthrough_FoVtnbm0hPc.mp4" type="video/mp4">
+          </video>
+          <figcaption>
+            Example assembly walkthrough used to frame questions about contacts,
+            order, final connectivity, and part identity.
+          </figcaption>
+        </figure>
+
+        <div class="paper-stat-row" aria-label="Dataset summary">
+          <div><span>Questions</span><strong>602</strong></div>
+          <div><span>Videos</span><strong>50</strong></div>
+          <div><span>Furniture Items</span><strong>24</strong></div>
+          <div><span>Task Families</span><strong>4</strong></div>
+        </div>
+      </section>
+
+      <section class="paper-section" id="benchmark">
+        <div class="paper-section-heading">
+          <p class="variant-kicker">Benchmark Design</p>
+          <h2>Four question families cover complementary assembly skills.</h2>
+        </div>
+        <p>
+          The benchmark separates broad video understanding into concrete assembly
+          skills. Each family isolates a different failure mode: ordering events,
+          localizing contact changes, checking final connectivity, or tracking
+          object identity through motion and occlusion.
+        </p>
+
+        <div class="paper-table-wrap">
+          <table class="paper-table">
+            <thead>
+              <tr>
+                <th>Family</th>
+                <th>Questions</th>
+                <th>What the model must infer</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>Temporal Localization</td>
+                <td>103</td>
+                <td>Which connection happened first, last, next, or most recently.</td>
+              </tr>
+              <tr>
+                <td>Temporal Ordering</td>
+                <td>155</td>
+                <td>The exact order in which parts or part-pairs became connected.</td>
+              </tr>
+              <tr>
+                <td>Mating</td>
+                <td>87</td>
+                <td>Whether two labeled parts are connected in the final assembly.</td>
+              </tr>
+              <tr>
+                <td>Tracking</td>
+                <td>257</td>
+                <td>Which part in one state corresponds to a labeled part in another.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="paper-callout">
+          <strong>Why furniture assembly?</strong>
+          <p>
+            Assembly creates visually grounded events with persistent parts,
+            occlusions, repeated objects, and irreversible contact changes. Those
+            properties make it a compact stress test for spatio-temporal reasoning.
+          </p>
+        </div>
+      </section>
+
+      <section class="paper-section" id="visual-prompts">
+        <div class="paper-section-heading">
+          <p class="variant-kicker">Visual Prompts</p>
+          <h2>Questions are grounded with annotated images, not only text.</h2>
+        </div>
+        <p>
+          Each example pairs a video with one or more visual prompts. Non-tracking
+          questions usually show the relevant labeled parts in a single annotated
+          image. Tracking questions ask for correspondence across two states.
+        </p>
+
+        <div class="paper-image-grid" aria-label="Visual prompt examples">
+          <figure>
+            <img
+              src="assets/prompt-images/latest_change/Chair/vedbo/NdkuJ9cwOuE/prompt_417_q093.jpg"
+              alt="Annotated chair assembly frame for a latest-change question"
+            >
+            <figcaption>Temporal localization</figcaption>
+          </figure>
+          <figure>
+            <img
+              src="assets/prompt-images/find_edges/Bench/tjusig/9tGOUGtUapo/prompt_086_q445.jpg"
+              alt="Annotated bench assembly frame for a connectivity question"
+            >
+            <figcaption>Final connectivity</figcaption>
+          </figure>
+          <figure>
+            <img
+              src="assets/prompt-images/track_single/Chair/vedbo/NdkuJ9cwOuE/prompt_000_q099.jpg"
+              alt="Annotated chair assembly frame for a tracking question"
+            >
+            <figcaption>Part tracking</figcaption>
+          </figure>
+        </div>
+      </section>
+
+      <section class="paper-section" id="evaluation">
+        <div class="paper-section-heading">
+          <p class="variant-kicker">Evaluation</p>
+          <h2>Models are scored as multiple-choice video question answerers.</h2>
+        </div>
+        <p>
+          The paper reports micro-average accuracy and per-family accuracy across
+          prompt and video conditions. This page keeps the setup visible without
+          embedding the full interactive browser; the full viewer remains one click
+          away from the resource links.
+        </p>
+
+        <div class="paper-method-grid">
+          <article>
+            <h3>Inputs</h3>
+            <p>
+              Key-frame or trimmed videos, paired with visual prompts that mark the
+              parts mentioned in the question.
+            </p>
+          </article>
+          <article>
+            <h3>Prompt media</h3>
+            <p>
+              Separate images, collages, concatenated prompts, and mixed-media
+              variants test how presentation affects model behavior.
+            </p>
+          </article>
+          <article>
+            <h3>Outputs</h3>
+            <p>
+              Models answer by choosing one option. Scores are reported overall and
+              for TORD, TLOC, TRACK, and MATE.
+            </p>
+          </article>
+        </div>
+      </section>
+
+      <section class="paper-section" id="results">
+        <div class="paper-section-heading">
+          <p class="variant-kicker">Results</p>
+          <h2>Current large vision-language models remain far below human performance.</h2>
+        </div>
+
+        <div class="paper-result-grid" aria-label="Headline benchmark results">
+          <article>
+            <span>Human</span>
+            <strong>94.18</strong>
+            <p>micro-average accuracy</p>
+          </article>
+          <article>
+            <span>Best open model</span>
+            <strong>41.03</strong>
+            <p>InternVL3-78B, concat prompt, key-frame video</p>
+          </article>
+          <article>
+            <span>Best closed model</span>
+            <strong>37.71</strong>
+            <p>GPT-5, mixed-media prompt, key-frame video</p>
+          </article>
+        </div>
+
+        <div class="paper-table-wrap">
+          <table class="paper-table">
+            <thead>
+              <tr>
+                <th>Model</th>
+                <th>Prompt</th>
+                <th>Video</th>
+                <th>Micro</th>
+                <th>TORD</th>
+                <th>TLOC</th>
+                <th>TRACK</th>
+                <th>MATE</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>InternVL3-78B</td>
+                <td>Concat</td>
+                <td>Key-frame</td>
+                <td>41.03</td>
+                <td>43.87</td>
+                <td>39.81</td>
+                <td>42.02</td>
+                <td>34.48</td>
+              </tr>
+              <tr>
+                <td>Qwen2.5-VL-72B</td>
+                <td>Mixed-Media</td>
+                <td>Trimmed</td>
+                <td>40.37</td>
+                <td>41.29</td>
+                <td>30.10</td>
+                <td>45.14</td>
+                <td>36.78</td>
+              </tr>
+              <tr>
+                <td>GPT-5</td>
+                <td>Mixed-Media</td>
+                <td>Key-frame</td>
+                <td>37.71</td>
+                <td>40.65</td>
+                <td>53.40</td>
+                <td>25.68</td>
+                <td>49.43</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="paper-section" id="discussion">
+        <div class="paper-section-heading">
+          <p class="variant-kicker">Discussion</p>
+          <h2>The benchmark highlights a gap between recognizing scenes and reasoning through procedures.</h2>
+        </div>
+        <div class="paper-discussion-grid">
+          <article>
+            <h3>What the page foregrounds</h3>
+            <p>
+              Following the reference structure puts the paper identity, abstract,
+              resources, and contents above the fold. The reader then moves through
+              evidence in a predictable research-project sequence.
+            </p>
+          </article>
+          <article>
+            <h3>What remains available</h3>
+            <p>
+              The interactive viewer and full results table stay linked from the
+              header. This keeps the landing page lighter while preserving paths to
+              the detailed benchmark artifacts.
+            </p>
+          </article>
+        </div>
+      </section>
+
+      <section class="paper-section" id="citation">
+        <div class="paper-section-heading">
+          <p class="variant-kicker">Citation</p>
+          <h2>BibTeX</h2>
+        </div>
+        <pre class="variant-bibtex"><code>@InProceedings{Chetan_2026_CVPR,
+    author    = {Chetan, Aditya and Cai, Eric and Kushwaha, Peeyush and Kani, Bharath Raj Nagoor and Mall, Utkarsh and Wang, Qianqian and Snavely, Noah and Hariharan, Bharath},
+    title     = {Flat-Pack Bench: Evaluating Spatio-Temporal Understanding in Large Vision-Language Models through Furniture Assembly},
+    booktitle = {Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR)},
+    month     = {June},
+    year      = {2026},
+    pages     = {16624-16634}
+}</code></pre>
+      </section>
+    </main>
+  </body>
+</html>
