@@ -10,7 +10,7 @@
     <title>Flat-Pack Bench</title>
     <link rel="icon" href="/favicon.ico?v=20260528-monogram" sizes="any">
     <link rel="icon" type="image/png" href="/assets/images/favicon.png?v=20260528-monogram">
-    <link rel="stylesheet" href="assets/css/styles.css?v=20260528-11">
+    <link rel="stylesheet" href="assets/css/styles.css?v=20260529-1">
   </head>
   <body class="homepage-fpb">
     <header class="hero fpb-hero" id="top">
@@ -430,6 +430,70 @@
                 proprietary, open, and specialized - remain far from achieving
                 the strong, reliable spatio-temporal understanding skills that
                 humans demonstrate on <span class="paper-title paper-title-inline" aria-label="Flat-Pack Bench"><span class="sc-cap">F</span><span class="sc-small">LAT</span><span class="sc-punct">-</span><span class="sc-cap">P</span><span class="sc-small">ACK</span><span class="sc-cap sc-word">B</span><span class="sc-small">ENCH</span></span>.
+              </p>
+            </div>
+          </div>
+          <div class="section-heading results-subsection-heading">
+            <h2>Do LVLMs Use Temporal Context Effectively?</h2>
+          </div>
+          <div class="temporal-context-section">
+            <div class="evaluation-summary temporal-context-summary">
+              <p class="lead">
+                Tracking is a major failure mode in the results above. This is
+                especially important because tracking requires temporal
+                understanding: a model has to preserve object identity across
+                occlusions, camera motion, repeated part shapes, and changing
+                viewpoints. The video is the only input that shows how a
+                labeled part in Image A becomes a labeled part in Image B, so
+                poor tracking raises a direct question: are LVLMs actually
+                using the temporal information in the video?
+              </p>
+              <p class="lead">
+                To test this, we evaluate an image-only version of the
+                benchmark. The assembly video is removed, and humans and models
+                answer using only the visual prompts, together with the
+                multiple-choice question. If the tasks truly require temporal
+                information, human performance should drop sharply. If LVLMs
+                are using the video effectively, their performance should also
+                degrade substantially when video is removed.
+              </p>
+            </div>
+
+            <figure class="temporal-context-figure">
+              <div class="temporal-context-figure-scroll">
+                <img
+                  src="assets/images/results/image-only-grouped-barplot.png"
+                  alt="Grouped bar plot comparing Qwen2.5-VL-72B and human accuracy for video plus image, image-only, and shuffled part prompts across micro average, temporal ordering, temporal localization, tracking, and mating."
+                >
+              </div>
+              <figcaption>Model bars report Qwen2.5-VL-72B; human bars are shown for comparison.</figcaption>
+            </figure>
+
+            <div class="evaluation-summary temporal-context-summary">
+              <p class="lead">
+                Our results show that human performance drops sharply in the
+                image-only setting, confirming that the questions require video
+                to answer reliably. Qwen2.5-VL-72B also drops overall, but the
+                drop is concentrated in tracking. Temporal Localization and
+                Mating stay stable or improve, suggesting that the model can
+                often rely on static visual cues, part appearance, part
+                position, and commonsense assembly priors rather than using
+                temporal evidence in the video.
+              </p>
+              <p class="lead">
+                The Shuffled Parts condition checks for a part ID bias. In some
+                Temporal Ordering questions, the numeric part IDs can correlate
+                with the connection order, giving the model a shortcut that
+                does not require temporal reasoning. The drop in Temporal
+                Ordering after shuffling shows that part-number ordering was
+                one shortcut the LVLM could exploit.
+              </p>
+            </div>
+
+            <div class="results-conclusion-box temporal-context-takeaway">
+              <p class="lead">
+                Overall, these results suggest that LVLMs are not using the
+                videos effectively.
               </p>
             </div>
           </div>

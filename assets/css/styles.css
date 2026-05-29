@@ -2847,6 +2847,41 @@ td.num {
   max-width: 980px;
 }
 
+.homepage-fpb .temporal-context-section {
+  max-width: 980px;
+}
+
+.homepage-fpb .temporal-context-figure {
+  width: fit-content;
+  max-width: 100%;
+  margin: 24px auto;
+  padding: clamp(12px, 2vw, 18px);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: rgba(255, 250, 240, 0.78);
+  box-shadow: 0 16px 34px rgba(43, 35, 22, 0.1);
+}
+
+.homepage-fpb .temporal-context-figure-scroll {
+  overflow-x: auto;
+}
+
+.homepage-fpb .temporal-context-figure img {
+  display: block;
+  width: 644px;
+  max-width: none;
+  border-radius: calc(var(--radius) - 6px);
+}
+
+.homepage-fpb .temporal-context-figure figcaption {
+  margin-top: 12px;
+  color: var(--muted);
+  font-family: var(--mono);
+  font-size: 0.78rem;
+  font-weight: 800;
+  line-height: 1.4;
+}
+
 .homepage-fpb .task-decomposition-section {
   max-width: 980px;
 }
